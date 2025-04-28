@@ -1,0 +1,142 @@
+syntax = "proto3";
+
+option csharp_namespace = "BookingServiceProvider";
+
+package booking;
+
+/*
+e voucher
+- firstName
+- lastName
+- ticketCategory
+- seatNumber 
+- gate
+- eventName
+- eventCategory
+- eventLocation 
+- date
+- time 
+- eventSchedule
+*/
+
+service BookingManager {
+  rpc GetBookings (GetBookingsRequest) returns (GetBookingsReply); // admin
+  rpc GetBookingsByEventId (GetBookingsByEventIdRequest) returns (GetBookingsByEventIdReply); // admin
+  rpc GetBookingsByUserId (GetBookingsByUserIdRequest) returns (GetBookingsByUserIdReply); // admin och user om userId är samma som bokningens userId
+  rpc GetOneBooking (GetOneBookingRequest) returns (GetOneBookingReply); // admin och user (om userid är samma som bookingens userid))
+  rpc CreateBooking (CreateBookingRequest) returns (CreateBookingReply); // admin och user
+  rpc CancelBooking (CancelBookingRequest) returns (CancelBookingReply); // admin och user
+
+}
+
+message GetBookingsRequest {
+}
+
+message Booking {
+	string id = 1;
+	string userId = 2;	
+	string firstName = 3;
+	string lastName = 4;
+	string email = 5; 
+	string phoneNumber = 6; 
+	string date = 7; // TODO fråga hans om date eller string? datatyp?
+	string eventId = 8;
+	string eventName = 9;
+	string eventCategory = 10;
+	string ticketCategory = 11; // standard, silver, gold, platinum, diamond osv 
+	string ticketPrice = 12;
+	string ticketQuantity = 13;
+	string totalPrice = 14;
+	int32 statusId = 15; 
+	string eVoucherId = 16; 
+	string invoiceId = 17;
+}
+
+message GetBookingsReply {
+	bool succeeded = 1;
+	string message = 2;
+	repeated Booking bookings = 3;
+}
+
+message GetBookingsByEventIdRequest{
+	string eventId = 1;
+}
+
+message GetBookingsByEventIdReply{
+	bool succeeded = 1;
+	string message = 2;
+	repeated Booking bookings = 3;
+}
+
+message GetBookingsByUserIdRequest{
+	string userId = 1;
+}
+
+message GetBookingsByUserIdReply{
+	bool succeeded = 1;
+	string message = 2;
+	repeated Booking bookings = 3;
+}
+
+
+
+message GetOneBookingRequest {
+	string bookingId = 1;
+}
+
+
+message GetOneBookingReply  {
+	bool succeeded = 1;
+	string message = 2;
+	Booking booking = 3;
+}
+
+message CreateBookingRequest{
+	string bookingStatus = 1; 
+	string userId = 2;	
+	string firstName = 3;
+	string lastName = 4;
+	string email = 5; 
+	string phoneNumber = 6; 
+	string date = 7; 
+	string eventId = 8;
+	string eventName = 9;
+	string eventCategory = 10;
+	string ticketCategory = 11;
+	string ticketPrice = 12;
+	string ticketQuantity = 13;
+	string totalPrice = 14;
+	string eVoucherId = 15; // skapas i annan service
+	string invoiceId = 16;// skapas i annan service
+}
+
+message CreateBookingReply{
+	bool succeeded = 1;
+	string message = 2;
+	Booking booking = 3; // TODO: ska vi skicka tillbaka hela bokningen eller bara id?
+}
+
+message CancelBookingRequest{
+	string id = 1;
+	string userId = 2;	
+	string firstName = 3;
+	string lastName = 4;
+	string email = 5; 
+	string phoneNumber = 6; 
+	string date = 7; 
+	string eventName = 8;
+	string eventCategory = 9;
+	string ticketCategory = 10; 
+	string ticketPrice = 11;
+	string ticketQuantity = 12;
+	string totalPrice = 13;
+	string bookingStatus = 14; 
+	string eVoucherId = 15; 
+	string invoiceId = 16;
+}
+
+message CancelBookingReply{
+	bool succeeded = 1;
+	string message = 2;
+	Booking booking = 3;
+}
