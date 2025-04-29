@@ -1,14 +1,9 @@
-﻿using Data.Entities;
-using Data.Interfaces;
-using Domain.Extensions;
-using Domain.Models;
-using Grpc.Core;
-using System.Diagnostics;
+﻿using Grpc.Core;
 
-namespace Presentation.Services;
+namespace Presentation.GrpcServices;
 
 
-public interface IBookingService
+public interface IBookingGrpcService
 {
     Task<CancelBookingReply> CancelBooking(CancelBookingRequest request, ServerCallContext context);
     Task<CreateBookingReply> CreateBooking(CreateBookingRequest request, ServerCallContext context);
@@ -17,14 +12,11 @@ public interface IBookingService
     Task<GetOneBookingReply> GetOneBooking(GetOneBookingRequest request, ServerCallContext context);
 }
 
-public interface IBookingStatusRepository
-{
-}
 
-public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository) : BookingManager.BookingManagerBase, IBookingService
+
+public class BookingGrpcService : BookingManager.BookingManagerBase, IBookingGrpcService
 {
-    private readonly IBookingRepository _bookingRepository = bookingRepository;
-    private readonly IBookingStatusRepository _bookingStatusRepository = bookingStatusRepository;
+    /*
     public override async Task<GetBookingsReply> GetBookings(GetBookingsRequest request, ServerCallContext context)
     {
         try
@@ -242,6 +234,9 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
         }
     }
 
+
+
+    */
 }
 
 

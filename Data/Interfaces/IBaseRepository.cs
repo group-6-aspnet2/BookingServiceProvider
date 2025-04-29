@@ -9,5 +9,5 @@ public interface IBaseRepository<TEntity, TModel> where TEntity : class
     Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> findBy);
     Task<RepositoryResult<IEnumerable<TModel>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortByColumn = null, Expression<Func<TEntity, bool>>? filterBy = null, int take = 0, params Expression<Func<TEntity, object>>[] includes);
     Task<RepositoryResult<TModel>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes);
-    Task<RepositoryResult> UpdateAsync(TEntity entity);
+    Task<RepositoryResult<TModel>> UpdateAsync(TEntity entity);
 }

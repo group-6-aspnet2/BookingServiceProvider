@@ -1,5 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Presentation.Services;
+﻿using Business.Interfaces;
+using Domain.Models;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Presentation.Controllers;
 
@@ -17,7 +18,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     //    try
     //    {
     //        var result = await _bookingService.GetBookings(new GetBookingsRequest(), context:  ); // TODO fråga hans om context andra parameter?
-          
+
     //         return result.Succeeded 
     //            ? Ok(result.Bookings) 
     //            : BadRequest(result.Message);
@@ -47,4 +48,25 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     //        return Problem(detail: ex.Message, statusCode: 500);
     //    }
     //}
+
+
+    [HttpPost]
+    public async Task<IActionResult> AddNewBooking(CreateBookingForm form)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { message = "Invalid booking form" });
+
+            var createResult = await _bookingService.CreateNewBookingAsync(form);
+            return createResult.Succeeded 
+                ? Ok() 
+                : Problem(createResult.Error);
+
+        }
+        catch (Exception ex)
+        {
+            return Problem(detail: ex.Message);
+        }
+    }
 }

@@ -102,7 +102,9 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
 
             _table.Add(entity);
             await _context.SaveChangesAsync();
-            return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 201 };
+            var addedModel = entity.MapTo<TModel>();
+
+            return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 201, Result = addedModel };
         }
         catch (Exception ex)
         {
@@ -111,24 +113,27 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         }
     }
 
-    public virtual async Task<RepositoryResult> UpdateAsync(TEntity entity)
+    public virtual async Task<RepositoryResult<TModel>> UpdateAsync(TEntity entity)
     {
         try
         {
             if (entity == null)
-                return new RepositoryResult { Succeeded = false, StatusCode = 400, Error = "Invalid properties" };
+                return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 400, Error = "Invalid properties" };
 
             if (!await _table.ContainsAsync(entity))
-                return new RepositoryResult { Succeeded = false, StatusCode = 404, Error = "Entity not found." };
+                return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 404, Error = "Entity not found." };
 
             _table.Update(entity);
             await _context.SaveChangesAsync();
-            return new RepositoryResult { Succeeded = true, StatusCode = 200 };
+
+            var updatedModel = entity.MapTo<TModel>();
+
+            return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 200, Result = updatedModel };
         }
         catch (Exception ex)
         {
             Debug.WriteLine(ex.Message);
-            return new RepositoryResult { Succeeded = false, StatusCode = 500, Error = ex.Message };
+            return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 500, Error = ex.Message };
         }
     }
 

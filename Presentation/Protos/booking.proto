@@ -110,7 +110,7 @@ message CreateBookingRequest{
 	google.protobuf.Timestamp date = 7; 
 	string eventId = 8;
 	string eventName = 9;
-	string eventCategory = 10;
+	int32 eventCategoryId = 10;
 	int32 ticketCategoryId = 11; 
 	string ticketPrice = 12;
 	string ticketQuantity = 13;
@@ -134,7 +134,7 @@ message CancelBookingRequest{
 	string phoneNumber = 6; 
 	google.protobuf.Timestamp date = 7; 
 	string eventName = 8;
-	string eventCategory = 9;
+	int32 eventCategoryId = 9;
 	int32 ticketCategoryId = 10; 
 	string ticketPrice = 11;
 	string ticketQuantity = 12;
