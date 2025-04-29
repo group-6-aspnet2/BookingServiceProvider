@@ -1,14 +1,23 @@
-﻿namespace Domain.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Domain.Models;
 
 public class CreateBookingForm
 {
-        public string EventId { get; set; } = null!;
-        public string TicketCategory { get; set; } = null!;
-        public decimal TicketPrice { get; set; }
-        public int TicketQuantity { get; set; }
-        public decimal TotalPrice { get; set; }
-        public int StatusId { get; set; }       
-        public string UserId { get; set; } = null!;
+    [Required]
+    public string EventId { get; set; } = null!;
+    [Required]
+    public int TicketCategoryId { get; set; } 
+    [Required]
+    public decimal TicketPrice { get; set; }
+    [Required]
+    public int TicketQuantity { get; set; }
+    [Required]
+    public decimal TotalPrice { get; set; }
+    [Required]
+    public int StatusId { get; set; }
+    [Required]
+    public string UserId { get; set; } = null!;
 
     // ska eventproperties skickas med eller hämtas i service med eventId?
     //public string EventName { get; set; } = null!; 

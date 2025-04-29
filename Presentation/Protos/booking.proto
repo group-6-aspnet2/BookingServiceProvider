@@ -1,8 +1,16 @@
+
+
+
 syntax = "proto3";
 
-option csharp_namespace = "BookingServiceProvider";
+option csharp_namespace = "Presentation";
 
 package booking;
+
+
+
+import "google/protobuf/timestamp.proto";
+
 
 /*
 e voucher
@@ -35,21 +43,22 @@ message GetBookingsRequest {
 message Booking {
 	string id = 1;
 	string userId = 2;	
-	string firstName = 3;
-	string lastName = 4;
-	string email = 5; 
-	string phoneNumber = 6; 
-	string date = 7; // TODO fråga hans om date eller string? datatyp?
+	string firstName = 3;  // ta bort? hämtas med userId
+	string lastName = 4; // ta bort? hämtas med userId
+	string email = 5;  // ta bort? hämtas med userId
+	string phoneNumber = 6;  // ta bort? hämtas med userId
+	google.protobuf.Timestamp date = 7; // TODO fråga hans om date? datatyp?
 	string eventId = 8;
 	string eventName = 9;
-	string eventCategory = 10;
-	string ticketCategory = 11; // standard, silver, gold, platinum, diamond osv 
+	int32 eventCategoryId = 10;
+	int32 ticketCategoryId = 11; 
 	string ticketPrice = 12;
 	string ticketQuantity = 13;
 	string totalPrice = 14;
 	int32 statusId = 15; 
 	string eVoucherId = 16; 
 	string invoiceId = 17;
+	google.protobuf.Timestamp createDate = 18;
 }
 
 message GetBookingsReply {
@@ -92,17 +101,17 @@ message GetOneBookingReply  {
 }
 
 message CreateBookingRequest{
-	string bookingStatus = 1; 
+	int32 statusId = 1; 
 	string userId = 2;	
 	string firstName = 3;
 	string lastName = 4;
 	string email = 5; 
 	string phoneNumber = 6; 
-	string date = 7; 
+	google.protobuf.Timestamp date = 7; 
 	string eventId = 8;
 	string eventName = 9;
 	string eventCategory = 10;
-	string ticketCategory = 11;
+	int32 ticketCategoryId = 11; 
 	string ticketPrice = 12;
 	string ticketQuantity = 13;
 	string totalPrice = 14;
@@ -123,20 +132,22 @@ message CancelBookingRequest{
 	string lastName = 4;
 	string email = 5; 
 	string phoneNumber = 6; 
-	string date = 7; 
+	google.protobuf.Timestamp date = 7; 
 	string eventName = 8;
 	string eventCategory = 9;
-	string ticketCategory = 10; 
+	int32 ticketCategoryId = 10; 
 	string ticketPrice = 11;
 	string ticketQuantity = 12;
 	string totalPrice = 13;
-	string bookingStatus = 14; 
+	int32 statusId = 14; 
 	string eVoucherId = 15; 
 	string invoiceId = 16;
+	google.protobuf.Timestamp createDate  = 17;
+
 }
 
 message CancelBookingReply{
 	bool succeeded = 1;
 	string message = 2;
-	Booking booking = 3;
+	int32 statusCode = 3;
 }

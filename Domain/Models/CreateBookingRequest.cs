@@ -5,11 +5,11 @@ public class CreateBookingRequest
     // hämta eventproperties med eventId
     public string EventId { get; set; } = null!;
     public string EventName { get; set; } = null!;
-    public string EventCategory { get; set; } = null!;
+    public int EventCategoryId { get; set; }
     public DateTime Date { get; set; }
 
 
-    public string TicketCategory { get; set; } = null!;
+    public int TicketCategoryId { get; set; } 
     public decimal TicketPrice { get; set; }
     public int TicketQuantity { get; set; }
     public decimal TotalPrice { get; set; }
