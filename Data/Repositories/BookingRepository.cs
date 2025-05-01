@@ -27,7 +27,7 @@ public class BookingRepository(DataContext context) : BaseRepository<BookingEnti
             bookingEntity.EventCategoryName = model.EventCategoryName;
             bookingEntity.EventDate = model.EventDate;
             bookingEntity.InvoiceId = model.InvoiceId;
-            bookingEntity.TicketCategoryId = model.TicketCategoryId;
+            bookingEntity.TicketCategoryName = model.TicketCategoryName;
             bookingEntity.TicketPrice = model.TicketPrice;
             bookingEntity.TicketQuantity = model.TicketQuantity;
             bookingEntity.TotalPrice = model.TotalPrice;

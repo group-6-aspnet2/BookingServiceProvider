@@ -7,7 +7,7 @@ public class CreateBookingForm
     [Required]
     public string EventId { get; set; } = null!;
     [Required]
-    public int TicketCategoryId { get; set; } 
+    public string TicketCategoryName { get; set; } = null!;
     [Required]
     public decimal TicketPrice { get; set; }
     [Required]

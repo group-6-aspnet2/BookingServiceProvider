@@ -51,7 +51,7 @@ message Booking {
 	string ticket_price = 12;
 	int32 ticket_quantity = 13;
 	string total_price = 14;
-	string status_name = 15; 
+	int32 status_id = 15; 
 	string e_voucher_id = 16; 
 	string invoice_id = 17;
 	google.protobuf.Timestamp create_date = 18;
@@ -110,7 +110,7 @@ message CreateBookingRequest{
 	string ticket_price = 12;
 	int32 ticket_quantity = 13;
 	string total_price = 14;
-	string status_name = 15; 
+	int32 status_id = 15; 
 	string e_voucher_id = 16; 
 	string invoice_id = 17;
 }
@@ -136,7 +136,7 @@ message CancelBookingRequest{
 	string ticket_price = 12;
 	int32 ticket_quantity = 13;
 	string total_price = 14;
-	string status_name = 15; 
+	int32 status_id = 15; 
 	string e_voucher_id = 16; 
 	string invoice_id = 17;
 	google.protobuf.Timestamp create_date = 18;

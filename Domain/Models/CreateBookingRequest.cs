@@ -9,7 +9,7 @@ public class CreateBookingRequest
     public DateOnly EventDate { get; set; }
 
 
-    public int TicketCategoryId { get; set; } 
+    public string TicketCategoryName { get; set; } = null!;
     public decimal TicketPrice { get; set; }
     public int TicketQuantity { get; set; }
     public decimal TotalPrice { get; set; }

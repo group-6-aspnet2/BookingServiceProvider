@@ -8,7 +8,7 @@ public class BookingModel
     public string EventCategoryName { get; set; } = null!;
     public DateTime EventDate { get; set; }
     public string InvoiceId { get; set; } = null!;  // sätts när invoice skapats i sin service provider
-    public int TicketCategoryId { get; set; } 
+    public string TicketCategoryName { get; set; } = null!;
     public decimal TicketPrice { get; set; }
     public int TicketQuantity { get; set; }
     public decimal TotalPrice { get; set; }

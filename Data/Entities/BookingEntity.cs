@@ -18,7 +18,7 @@ public class BookingEntity
     public string EventCategoryName { get; set; } = null!;
     public DateTime EventDate { get; set; }
     public string InvoiceId { get; set; } = null!;
-    public int TicketCategoryId { get; set; } 
+    public string TicketCategoryName { get; set; } = null!;
 
     [Column(TypeName = "money")]
     public decimal TicketPrice { get; set; }
