@@ -15,7 +15,7 @@ public class BookingEntity
 
     public string EventId { get; set; } = null!;
     public string EventName { get; set; } = null!;
-    public int EventCategoryId { get; set; } 
+    public string EventCategoryName { get; set; } = null!;
     public DateTime EventDate { get; set; }
     public string InvoiceId { get; set; } = null!;
     public int TicketCategoryId { get; set; } 

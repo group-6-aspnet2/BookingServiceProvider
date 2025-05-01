@@ -6,10 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-	<PropertyGroup>
-		<GoogleApiCommonProtosDir>$(NuGetPackageRoot)google.api.commonprotos\2.16.0\</GoogleApiCommonProtosDir>
-	</PropertyGroup>
-
   <ItemGroup>
     <PackageReference Include="Google.Api.CommonProtos" Version="2.16.0" />
     <PackageReference Include="Google.Protobuf" Version="3.30.2" />
