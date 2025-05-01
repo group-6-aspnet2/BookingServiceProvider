@@ -1,21 +1,19 @@
 ﻿namespace Domain.Models;
 
-public class CreateBookingRequest
+public class UpdateBookingForm
 {
-    // hämta eventproperties med eventId
+    public string Id { get; set; } = null!;
     public string EventId { get; set; } = null!;
     public string EventName { get; set; } = null!;
-    public string EventCategoryName { get; set; } = null!;
-    public DateOnly EventDate { get; set; }
-
-
-    public int TicketCategoryId { get; set; } 
+    public int EventCategoryId { get; set; }
+    public DateTime EventDate { get; set; }
+    public string InvoiceId { get; set; } = null!;  // sätts när invoice skapats i sin service provider
+    public int TicketCategoryId { get; set; }
     public decimal TicketPrice { get; set; }
     public int TicketQuantity { get; set; }
     public decimal TotalPrice { get; set; }
     public int StatusId { get; set; }
-
-    // hämta användaruppgifter med userId
+    public string EVoucherId { get; set; } = null!;  // sätts när evoucher skapats i sin service provider
     public string UserId { get; set; } = null!;
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;

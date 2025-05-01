@@ -21,75 +21,98 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         _table = _context.Set<TEntity>();
     }
 
-
-
-
-
-
     public virtual async Task<RepositoryResult<IEnumerable<TModel>>> GetAllAsync(bool orderByDescending = false, Expression<Func<TEntity, object>>? sortByColumn = null, Expression<Func<TEntity, bool>>? filterBy = null, int take = 0, params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> query = _table;
-
-        if (filterBy != null)
-            query = query.Where(filterBy);
-
-        if (includes != null && includes.Length != 0)
+        try
         {
-            foreach (var include in includes)
+
+            IQueryable<TEntity> query = _table;
+
+            if (filterBy != null)
+                query = query.Where(filterBy);
+
+            if (includes != null && includes.Length != 0)
             {
-                query = query.Include(include);
+                foreach (var include in includes)
+                {
+                    query = query.Include(include);
+                }
             }
+
+            if (sortByColumn != null)
+                query = orderByDescending
+                    ? query.OrderByDescending(sortByColumn)
+                    : query.OrderBy(sortByColumn);
+
+            if (take > 0)
+            {
+                query = query.Take(take);
+            }
+
+            var entities = await query.ToListAsync();
+
+            var result = entities.Select(entity => entity.MapTo<TModel>());
+            return new RepositoryResult<IEnumerable<TModel>> { Succeeded = true, StatusCode = 200, Result = result };
         }
-
-        if (sortByColumn != null)
-            query = orderByDescending
-                ? query.OrderByDescending(sortByColumn)
-                : query.OrderBy(sortByColumn);
-
-        if (take > 0)
+        catch (Exception ex)
         {
-            query = query.Take(take);
+            return new RepositoryResult<IEnumerable<TModel>> { Succeeded = false, StatusCode = 200, Error = ex.Message };
+
         }
 
-        var entities = await query.ToListAsync();
-
-        var result = entities.Select(entity => entity.MapTo<TModel>());
-        return new RepositoryResult<IEnumerable<TModel>> { Succeeded = true, StatusCode = 200, Result = result };
     }
 
 
     public virtual async Task<RepositoryResult<TModel>> GetAsync(Expression<Func<TEntity, bool>> findBy, params Expression<Func<TEntity, object>>[] includes)
     {
-        IQueryable<TEntity> query = _table;
 
-        if (findBy == null)
-            return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 400, Error = "Expression not defined." };
+        try
+        {
+            IQueryable<TEntity> query = _table;
 
-        if (includes != null && includes.Length != 0)
-            foreach (var include in includes)
-                query = query.Include(include);
+            if (findBy == null)
+                return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 400, Error = "Expression not defined." };
 
-        var entity = await query.FirstOrDefaultAsync(findBy);
+            if (includes != null && includes.Length != 0)
+                foreach (var include in includes)
+                    query = query.Include(include);
 
-        if (entity == null)
-            return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 404, Error = "Entity not found." };
+            var entity = await query.FirstOrDefaultAsync(findBy);
+
+            if (entity == null)
+                return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 404, Error = "Entity not found." };
 
 
-        var result = entity.MapTo<TModel>();
+            var result = entity.MapTo<TModel>();
 
-        return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 200, Result = result };
+            return new RepositoryResult<TModel> { Succeeded = true, StatusCode = 200, Result = result };
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 500, Error = ex.Message };
+        }
+
     }
 
 
     public virtual async Task<RepositoryResult> ExistsAsync(Expression<Func<TEntity, bool>> findBy)
     {
-        if (findBy == null)
-            return new RepositoryResult { Succeeded = false, StatusCode = 400, Error = "Invalid expression" };
+        try
+        {
+            if (findBy == null)
+                return new RepositoryResult { Succeeded = false, StatusCode = 400, Error = "Invalid expression" };
 
-        if (!await _table.AnyAsync(findBy))
-            return new RepositoryResult { Succeeded = false, StatusCode = 404, Error = "Entity not found." };
+            if (!await _table.AnyAsync(findBy))
+                return new RepositoryResult { Succeeded = false, StatusCode = 404, Error = "Entity not found." };
 
-        return new RepositoryResult { Succeeded = true, StatusCode = 200, Error = "Entity exists." };
+            return new RepositoryResult { Succeeded = true, StatusCode = 200, Error = "Entity exists." };
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            return new RepositoryResult<TModel> { Succeeded = false, StatusCode = 500, Error = ex.Message };
+        }
     }
 
 

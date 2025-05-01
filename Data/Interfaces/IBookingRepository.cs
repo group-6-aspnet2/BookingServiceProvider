@@ -7,4 +7,5 @@ namespace Data.Interfaces;
 
 public interface IBookingRepository : IBaseRepository<BookingEntity, BookingModel>
 {
+    Task<BookingResult<BookingModel>> UpdateBookingFromModelAsync(BookingModel model);
 }

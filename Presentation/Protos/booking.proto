@@ -6,13 +6,9 @@ syntax = "proto3";
 option csharp_namespace = "Presentation";
 
 package booking;
-
-
-
 import "google/protobuf/timestamp.proto";
 
-
-/*
+/* 
 e voucher
 - firstName
 - lastName
@@ -42,23 +38,23 @@ message GetBookingsRequest {
 
 message Booking {
 	string id = 1;
-	string userId = 2;	
-	string firstName = 3;  // ta bort? hämtas med userId
-	string lastName = 4; // ta bort? hämtas med userId
+	string user_id = 2;	
+	string first_name = 3;  // ta bort? hämtas med userId
+	string last_name = 4; // ta bort? hämtas med userId
 	string email = 5;  // ta bort? hämtas med userId
-	string phoneNumber = 6;  // ta bort? hämtas med userId
-	google.protobuf.Timestamp date = 7; // TODO fråga hans om date? datatyp?
-	string eventId = 8;
-	string eventName = 9;
-	int32 eventCategoryId = 10;
-	int32 ticketCategoryId = 11; 
-	string ticketPrice = 12;
-	string ticketQuantity = 13;
-	string totalPrice = 14;
-	int32 statusId = 15; 
-	string eVoucherId = 16; 
-	string invoiceId = 17;
-	google.protobuf.Timestamp createDate = 18;
+	string phone_number = 6;  // ta bort? hämtas med userId
+	google.protobuf.Timestamp event_date = 7; // TODO fråga hans om date? datatyp?
+	string event_id = 8;
+	string event_name = 9;
+	string event_category_name = 10;
+	string ticket_category_name = 11; 
+	string ticket_price = 12;
+	int32 ticket_quantity = 13;
+	string total_price = 14;
+	string status_name = 15; 
+	string e_voucher_id = 16; 
+	string invoice_id = 17;
+	google.protobuf.Timestamp create_date = 18;
 }
 
 message GetBookingsReply {
@@ -88,7 +84,6 @@ message GetBookingsByUserIdReply{
 }
 
 
-
 message GetOneBookingRequest {
 	string bookingId = 1;
 }
@@ -101,22 +96,23 @@ message GetOneBookingReply  {
 }
 
 message CreateBookingRequest{
-	int32 statusId = 1; 
-	string userId = 2;	
-	string firstName = 3;
-	string lastName = 4;
-	string email = 5; 
-	string phoneNumber = 6; 
-	google.protobuf.Timestamp date = 7; 
-	string eventId = 8;
-	string eventName = 9;
-	int32 eventCategoryId = 10;
-	int32 ticketCategoryId = 11; 
-	string ticketPrice = 12;
-	string ticketQuantity = 13;
-	string totalPrice = 14;
-	string eVoucherId = 15; // skapas i annan service
-	string invoiceId = 16;// skapas i annan service
+	string status = 1;
+	string user_id = 2;	
+	string first_name = 3;  // ta bort? hämtas med userId
+	string last_name = 4; // ta bort? hämtas med userId
+	string email = 5;  // ta bort? hämtas med userId
+	string phone_number = 6;  // ta bort? hämtas med userId
+	google.protobuf.Timestamp event_date = 7; // TODO fråga hans om date? datatyp?
+	string event_id = 8;
+	string event_name = 9;
+	string event_category_name = 10;
+	string ticket_category_name = 11; 
+	string ticket_price = 12;
+	int32 ticket_quantity = 13;
+	string total_price = 14;
+	string status_name = 15; 
+	string e_voucher_id = 16; 
+	string invoice_id = 17;
 }
 
 message CreateBookingReply{
@@ -127,27 +123,28 @@ message CreateBookingReply{
 
 message CancelBookingRequest{
 	string id = 1;
-	string userId = 2;	
-	string firstName = 3;
-	string lastName = 4;
-	string email = 5; 
-	string phoneNumber = 6; 
-	google.protobuf.Timestamp date = 7; 
-	string eventName = 8;
-	int32 eventCategoryId = 9;
-	int32 ticketCategoryId = 10; 
-	string ticketPrice = 11;
-	string ticketQuantity = 12;
-	string totalPrice = 13;
-	int32 statusId = 14; 
-	string eVoucherId = 15; 
-	string invoiceId = 16;
-	google.protobuf.Timestamp createDate  = 17;
+	string user_id = 2;	
+	string first_name = 3;  // ta bort? hämtas med userId
+	string last_name = 4; // ta bort? hämtas med userId
+	string email = 5;  // ta bort? hämtas med userId
+	string phone_number = 6;  // ta bort? hämtas med userId
+	google.protobuf.Timestamp event_date = 7; // TODO fråga hans om date? datatyp?
+	string event_id = 8;
+	string event_name = 9;
+	string event_category_name = 10;
+	string ticket_category_name = 11; 
+	string ticket_price = 12;
+	int32 ticket_quantity = 13;
+	string total_price = 14;
+	string status_name = 15; 
+	string e_voucher_id = 16; 
+	string invoice_id = 17;
+	google.protobuf.Timestamp create_date = 18;
 
 }
 
 message CancelBookingReply{
 	bool succeeded = 1;
 	string message = 2;
-	int32 statusCode = 3;
+	int32 status_code = 3;
 }

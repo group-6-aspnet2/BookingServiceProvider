@@ -162,6 +162,9 @@ public class BookingGrpcService : BookingManager.BookingManagerBase, IBookingGrp
                 };
             }
 
+    eventProvider 
+    userProvider
+
             // Hämta User med UserId, proto från Olivia (GetUserById)
             //var user = var GetUserById();
 
