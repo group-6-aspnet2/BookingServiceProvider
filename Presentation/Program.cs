@@ -1,3 +1,4 @@
+using Business;
 using Business.Interfaces;
 using Business.Services;
 using Data.Contexts;
@@ -10,10 +11,15 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddGrpc();
-builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("LocalDb")));
+builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer(builder.Configuration.GetConnectionString("SqlServer")));
 builder.Services.AddScoped<IBookingStatusRepository, BookingStatusRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+
+builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
+{
+    x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
+});
 
 var app = builder.Build();
 
