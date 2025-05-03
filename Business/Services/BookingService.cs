@@ -133,18 +133,32 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             if (eventReply != null)
             {
+                // TODO kolla events totalplatser och hämta alla bokningar för detta event. Kolla tillgänglighet. 
+                var allEventBookingsResult = await GetBookingsByEventIdAsync(eventReply.Event.EventId);
+                var totalBookingsToEvent = 0;
+
+                if (allEventBookingsResult.Result != null)
+                    foreach (var booking in allEventBookingsResult.Result)
+                    {
+                        totalBookingsToEvent += booking.TicketQuantity;
+                    }
+
+
+                // TODO kolla med cissi om amount of guests ska vara int istället i proto och db?
+                if (int.Parse(eventReply.Event.EventAmountOfGuests) - totalBookingsToEvent < form.TicketQuantity)
+                    return new BookingResult<BookingModel> { Succeeded = false, Error = "Not enough tickets available for this event" };
+                
                 createRequest.EventName = eventReply.Event.EventName;
                 createRequest.EventCategoryName = eventReply.Event.EventCategoryName;
                 createRequest.EventDate = DateOnly.Parse(eventReply.Event.EventDate);
             }
-            else
+            else // endast som mockdata för att testa att skapa bokningar utan en fungerande eventsrevice. TODO ta bort sen
             {
                 createRequest.EventName = "Green Day World Tour";
                 createRequest.EventCategoryName = "Consert";
                 createRequest.EventDate = DateOnly.FromDateTime(DateTime.Now);
             }
-           
-            //Mockdata för testning, istället för data som hämtas via grpc från UserProver och EventProvider
+
             //var userRequest = new GetUserByIdRequest
             //{
             //    UserId = form.UserId
@@ -156,13 +170,15 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             createRequest.Email = "arvid@domain.com";
 
             var entityToAdd = createRequest.MapTo<BookingEntity>();
+
+            // TODO anropa azure service bus för att skapa evoucher och invoice, få tillbaka id:n.
             entityToAdd.EVoucherId = Guid.NewGuid().ToString();
             entityToAdd.InvoiceId = Guid.NewGuid().ToString();
 
 
 
             var result = await _bookingRepository.AddAsync(entityToAdd);
-            
+
             return result.Succeeded
                 ? new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = result.Result }
                 : new BookingResult<BookingModel> { Succeeded = false, Error = result.Error, StatusCode = result.StatusCode };
