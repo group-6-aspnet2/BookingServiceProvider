@@ -13,8 +13,6 @@ public class CreateBookingForm
     [Required]
     public int TicketQuantity { get; set; }
     [Required]
-    public decimal TotalPrice { get; set; }
-    [Required]
     public string UserId { get; set; } = null!;
 
     // ska eventproperties skickas med eller hämtas i service med eventId?

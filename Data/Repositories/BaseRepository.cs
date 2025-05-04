@@ -173,7 +173,7 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
 
             _table.Remove(entity);
             await _context.SaveChangesAsync();
-            return new RepositoryResult { Succeeded = true, StatusCode = 200 };
+            return new RepositoryResult { Succeeded = true, StatusCode = 204 };
         }
         catch (Exception ex)
         {

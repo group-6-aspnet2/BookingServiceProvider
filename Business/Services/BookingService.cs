@@ -200,6 +200,27 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 return new BookingResult<BookingModel> { Succeeded = false, StatusCode = 404, Error = $"Could not find a booking with id {form.Id}." };
 
             var model = form.MapTo<BookingModel>();
+
+
+            var allEventBookingsResult = await GetBookingsByEventIdAsync(form.EventId);
+            var totalEventBookings = 0;
+
+            if (allEventBookingsResult.Result != null)
+                foreach (var booking in allEventBookingsResult.Result)
+                {
+                    if (booking.Id != form.Id)
+                    {
+                        totalEventBookings += booking.TicketQuantity;
+                    }
+                }
+
+
+            /*
+            if(event.totalAmountOfGuests - totalEventBookings < form.TicketQuantity)
+                return new BookingResult<BookingModel> { Succeeded = false, Error = "Not enough tickets available for this event" };
+            */
+
+            model.TotalPrice = form.TicketPrice * form.TicketQuantity;
             var result = await _bookingRepository.UpdateBookingFromModelAsync(model);
 
             if (result.Succeeded == false)
@@ -234,12 +255,11 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             if (cancelledStatus != null)
                 booking.StatusId = cancelledStatus.Id;
 
-            var bookingEntityToUpdateStatus = booking.MapTo<BookingEntity>();
-            var result = await _bookingRepository.UpdateAsync(bookingEntityToUpdateStatus);
+            var result = await _bookingRepository.UpdateBookingFromModelAsync(booking);
 
             return result.Succeeded
-                ? new BookingResult { Succeeded = true, StatusCode = 200 }
-                : new BookingResult { Succeeded = false, StatusCode = 500, Error = "Something went wrong when cancelling the booking" };
+                ? new BookingResult { Succeeded = true, StatusCode = 204 }
+                : new BookingResult { Succeeded = false, StatusCode = 500, Error = "Something went wrong when canceling the booking" };
         }
         catch (Exception ex)
         {

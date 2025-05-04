@@ -6,7 +6,7 @@ public class CreateBookingRequest
     public string EventId { get; set; } = null!;
     public string EventName { get; set; } = null!;
     public string EventCategoryName { get; set; } = null!;
-    public DateOnly EventDate { get; set; }
+    public DateTime EventDate { get; set; }
 
 
     public string TicketCategoryName { get; set; } = null!;
