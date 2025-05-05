@@ -126,6 +126,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             var createRequest = form.MapTo<CreateBookingRequest>();
             createRequest.StatusId = 1;
+            createRequest.TotalPrice = form.TicketQuantity * form.TicketPrice;
 
 
             var eventRequest = new GetEventByIdRequest { EventId = form.EventId };

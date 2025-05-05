@@ -30,8 +30,39 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
             var bookingResult = await _bookingService.GetAllAsync();
             if (bookingResult.Succeeded)
             {
-                // TODO fråga hans om mapTo funkar med _ namgivning i proto
-                var bookings = bookingResult.Result?.Select(x => x.MapTo<Booking>());
+                //var bookings = bookingResult.Result?.Select(x => x.MapTo<Booking>());
+
+                List<Booking> bookings = [];
+                foreach (var x in bookingResult.Result!)
+                {
+                    bookings.Add(
+                        new Booking
+                        {
+                            Id = x.Id,
+                            EventId = x.EventId,
+                            //EventDate = Timestamp.FromDateTime(x.EventDate),
+                            EventDate = Timestamp.FromDateTime(x.EventDate.ToUniversalTime()),
+                            EventCategoryName = x.EventCategoryName,
+                            EventName = x.EventName,
+                            StatusId = x.StatusId,
+                            EVoucherId = x.EVoucherId,
+                            InvoiceId = x.InvoiceId,
+                            UserId = x.UserId,
+                            FirstName = x.FirstName,
+                            LastName = x.LastName,
+                            Email = x.Email,
+                            PhoneNumber = x.PhoneNumber,
+                            TicketCategoryName = x.TicketCategoryName,
+                            TicketPrice = x.TicketPrice.ToString(),
+                            TicketQuantity = x.TicketQuantity,
+                            TotalPrice = x.TotalPrice.ToString(),
+                            //CreateDate = x.CreateDate.ToTimestamp(),
+                            //CreateDate = Timestamp.FromDateTime(x.CreateDate),
+                            CreateDate = Timestamp.FromDateTime(x.CreateDate.ToUniversalTime()),
+
+                        }
+                    );
+                }
 
                 var reply = new GetBookingsReply
                 {

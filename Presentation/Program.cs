@@ -24,9 +24,11 @@ builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
 var app = builder.Build();
 
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
+app.MapGrpcService<BookingGrpcService>();
 
 app.MapOpenApi();
 app.UseHttpsRedirection();
+app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
