@@ -38,7 +38,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     {
         try
         {
-            var result = await _bookingService.GetAllAsync();
+            var result = await _bookingService.GetAllBookingsAsync();
 
             return result.StatusCode switch
             {
@@ -54,7 +54,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
 
     // ADMIN
     [HttpGet("status/{statusId}")]
-    public async Task<IActionResult> GetBookings(int statusId)
+    public async Task<IActionResult> GetBookingsByStatus(int statusId)
     {
         try
         {
@@ -180,6 +180,30 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
                 404 => NotFound(cancelResult.Error),
                 _ => Problem(cancelResult.Error),
             };
+        }
+        catch (Exception ex)
+        {
+            return Problem(detail: ex.Message);
+        }
+    }
+
+    [HttpDelete("delete/{id}")] 
+    public async Task<IActionResult> DeleteBooking(string id)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(id))
+                return BadRequest(new { message = "No booking id provided" });
+
+            var deleteResult = await _bookingService.DeleteBookingWithTickets(id);
+            return deleteResult.StatusCode switch
+            {
+                204 => NoContent(),
+                400 => BadRequest(deleteResult.Error),
+                404 => NotFound(deleteResult.Error),
+                _ => Problem(deleteResult.Error),
+            };
+            
         }
         catch (Exception ex)
         {

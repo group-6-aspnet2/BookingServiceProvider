@@ -1,6 +1,10 @@
 ﻿using Business.Interfaces;
 using Domain.Extensions;
+using Domain.Models;
+using Google.Protobuf.WellKnownTypes;
+using Google.Type;
 using Grpc.Core;
+using System;
 using System.Diagnostics;
 
 namespace Presentation.GrpcServices;
@@ -21,13 +25,11 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
 {
 
     private readonly IBookingService _bookingService = bookingService;
-
-   
     public override async Task<GetBookingsReply> GetBookings(GetBookingsRequest request, ServerCallContext context)
     {
         try
         {
-            var bookingResult = await _bookingService.GetAllAsync();
+            var bookingResult = await _bookingService.GetAllBookingsAsync();
             if (bookingResult.Succeeded)
             {
                 //var bookings = bookingResult.Result?.Select(x => x.MapTo<Booking>());
@@ -40,26 +42,13 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
                         {
                             Id = x.Id,
                             EventId = x.EventId,
-                            //EventDate = Timestamp.FromDateTime(x.EventDate),
-                            EventDate = Timestamp.FromDateTime(x.EventDate.ToUniversalTime()),
-                            EventCategoryName = x.EventCategoryName,
-                            EventName = x.EventName,
                             StatusId = x.StatusId,
-                            EVoucherId = x.EVoucherId,
                             InvoiceId = x.InvoiceId,
                             UserId = x.UserId,
-                            FirstName = x.FirstName,
-                            LastName = x.LastName,
-                            Email = x.Email,
-                            PhoneNumber = x.PhoneNumber,
                             TicketCategoryName = x.TicketCategoryName,
                             TicketPrice = x.TicketPrice.ToString(),
                             TicketQuantity = x.TicketQuantity,
-                            TotalPrice = x.TotalPrice.ToString(),
-                            //CreateDate = x.CreateDate.ToTimestamp(),
-                            //CreateDate = Timestamp.FromDateTime(x.CreateDate),
                             CreateDate = Timestamp.FromDateTime(x.CreateDate.ToUniversalTime()),
-
                         }
                     );
                 }
@@ -131,49 +120,49 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
             };
         }
     }
-   
-   public override async Task<GetOneBookingReply> GetOneBooking(GetOneBookingRequest request, ServerCallContext context)
-   {
-       try
-       {
-           if (request.BookingId == null || string.IsNullOrWhiteSpace(request.BookingId))
-               return new GetOneBookingReply
-               {
-                   Succeeded = false,
-                   Message = "BookingId is required",
-               };
+
+    public override async Task<GetOneBookingReply> GetOneBooking(GetOneBookingRequest request, ServerCallContext context)
+    {
+        try
+        {
+            if (request.BookingId == null || string.IsNullOrWhiteSpace(request.BookingId))
+                return new GetOneBookingReply
+                {
+                    Succeeded = false,
+                    Message = "BookingId is required",
+                };
 
 
-           var bookingResult = await _bookingService.GetOneAsync(request.BookingId);
-           if (bookingResult.Succeeded)
-           {
-               var booking = bookingResult.Result?.MapTo<Booking>();
-               var reply = new GetOneBookingReply
-               {
-                   Succeeded = true,
-                   Booking = booking
-               };
-               return reply;
-           }
+            var bookingResult = await _bookingService.GetOneAsync(request.BookingId);
+            if (bookingResult.Succeeded)
+            {
+                var booking = bookingResult.Result?.MapTo<Booking>();
+                var reply = new GetOneBookingReply
+                {
+                    Succeeded = true,
+                    Booking = booking
+                };
+                return reply;
+            }
 
-           return new GetOneBookingReply
-           {
-               Succeeded = false,
-               Message = $"Something went wrong when fetching booking with id {request.BookingId}",
-           };
-       }
-       catch (Exception ex)
-       {
-           Debug.Write(ex.Message);
-           return new GetOneBookingReply
-           {
-               Succeeded = false,
-               Message = ex.Message,
-           };
-       }
-   }
+            return new GetOneBookingReply
+            {
+                Succeeded = false,
+                Message = $"Something went wrong when fetching booking with id {request.BookingId}",
+            };
+        }
+        catch (Exception ex)
+        {
+            Debug.Write(ex.Message);
+            return new GetOneBookingReply
+            {
+                Succeeded = false,
+                Message = ex.Message,
+            };
+        }
+    }
 
-    /*
+    
   public override async Task<CreateBookingReply> CreateBooking(CreateBookingRequest request, ServerCallContext context)
   {
       try
@@ -187,28 +176,19 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
               };
           }
 
-  eventProvider 
-  userProvider
-
-          // Hämta User med UserId, proto från Olivia (GetUserById)
-          //var user = var GetUserById();
-
-          // Hämta Event med EventId, proto från Cecilia (GetEventById)
-          //var event = await GetEventById();
-
-          var bookingEntityToAdd = request.MapTo<BookingEntity>();
-          //bookingEntityToAdd.EventName = event.Name
-          //bookingEntityToAdd.Date = event.Date;
-          //bookingEntityToAdd.EventCategoryId = event.CategoryId;
-          //bookingEntityToAdd.FirstName = user.FirstName;
-          //bookingEntityToAdd.LastName = user.LastName;
-          //bookingEntityToAdd.Email = user.Email;
-          //bookingEntityToAdd.PhoneNumber = user.PhoneNumber;
-
-          var createResult = await _bookingRepository.AddAsync(bookingEntityToAdd);
-
-          return createResult.Succeeded
-              ? new CreateBookingReply { Succeeded = true, Booking = createResult.Result!.MapTo<Booking>() }
+          
+            var form  = new CreateBookingForm
+          {
+              EventId = request.EventId,
+              UserId = request.UserId,
+              TicketCategoryName = request.TicketCategoryName,
+              TicketPrice = decimal.Parse(request.TicketPrice),
+              TicketQuantity = request.TicketQuantity,
+            };
+            var createResult = await _bookingService.CreateNewBookingAsync(form);
+            var booking = createResult.Result?.MapTo<Booking>();
+            return createResult.Succeeded
+              ? new CreateBookingReply { Succeeded = true, Booking = booking }
               : new CreateBookingReply { Succeeded = false, Message = "Something went wrong when creating the booking" };
 
       }
@@ -223,6 +203,8 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
       }
   }
 
+
+    /*
   public override async Task<CancelBookingReply> CancelBooking(CancelBookingRequest request, ServerCallContext context)
   {
       try
@@ -261,9 +243,6 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
           };
       }
   }
-
-
-
   */
 }
 

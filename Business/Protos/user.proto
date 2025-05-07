@@ -1,0 +1,27 @@
+syntax = "proto3";
+
+option csharp_namespace = "Business";
+
+package user;
+
+service UserContract {
+  rpc GetUserById (GetUserByIdRequest) returns (GetUserByIdReply);
+}
+
+message GetUserByIdRequest {
+	string user_id = 1;
+}
+
+message User {
+	string id = 1;
+	string first_name = 2;
+	string last_name = 3;
+	string email = 4;
+	string phone_number = 5;
+}
+
+message GetUserByIdReply {
+	bool succeeded = 1;
+	string message = 2;
+	User user = 3;
+}

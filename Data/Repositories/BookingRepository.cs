@@ -23,20 +23,11 @@ public class BookingRepository(DataContext context) : BaseRepository<BookingEnti
 
             bookingEntity.StatusId = model.StatusId;
             bookingEntity.EventId = model.EventId;
-            bookingEntity.EventName = model.EventName;
-            bookingEntity.EventCategoryName = model.EventCategoryName;
-            bookingEntity.EventDate = model.EventDate;
             bookingEntity.InvoiceId = model.InvoiceId;
             bookingEntity.TicketCategoryName = model.TicketCategoryName;
             bookingEntity.TicketPrice = model.TicketPrice;
             bookingEntity.TicketQuantity = model.TicketQuantity;
-            bookingEntity.TotalPrice = model.TotalPrice;
-            bookingEntity.EVoucherId = model.EVoucherId;
             bookingEntity.UserId = model.UserId;
-            bookingEntity.FirstName = model.FirstName;
-            bookingEntity.LastName = model.LastName;
-            bookingEntity.Email = model.Email;
-            bookingEntity.PhoneNumber = model.PhoneNumber;
 
             _table.Update(bookingEntity);
             await _context.SaveChangesAsync();
