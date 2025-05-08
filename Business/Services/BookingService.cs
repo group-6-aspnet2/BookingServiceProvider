@@ -12,14 +12,15 @@ namespace Business.Services;
 
 
 
-public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository /*, EventContract.EventContractClient eventClient, UserContract.UserContractClient userClient */, IInvoiceServiceBusHandler serviceBus, IBookingServiceBusListener listener) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository /*, EventContract.EventContractClient eventClient, UserContract.UserContractClient userClient */, IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IBookingServiceBusListener listener) : IBookingService
 {
 
     private readonly IBookingRepository _bookingRepository = bookingRepository;
     private readonly IBookingStatusRepository _bookingStatusRepository = bookingStatusRepository;
     //private readonly EventContract.EventContractClient _eventClient = eventClient;
     //private readonly UserContract.UserContractClient _userClient = userClient;
-    private readonly IInvoiceServiceBusHandler _serviceBus = serviceBus;
+    private readonly IInvoiceServiceBusHandler _invoiceServiceBus = invoiceServiceBus;
+    private readonly ITicketServiceBusHandler _ticketServiceBusHandler = ticketServiceBusHandler;
     private readonly IBookingServiceBusListener _listener = listener;
     public async Task<BookingResult<BookingModel>> GetOneAsync(string id)
     {
@@ -295,8 +296,6 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             createRequest.StatusId = 1;
 
             var eventRequest = new GetEventByIdRequest { EventId = form.EventId };
-
-
             //GetEventByIdReply eventReply = _eventClient.GetEventById(eventRequest);
             var eventReply = new GetEventByIdReply
             {
@@ -330,19 +329,30 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                     return new BookingResult<BookingModel> { Succeeded = false, Error = "Not enough tickets available for this event" };
             }
 
-            /*  */
             var entityToAdd = createRequest.MapTo<BookingEntity>();
             var result = await _bookingRepository.AddAsync(entityToAdd);
 
-            var payload = JsonSerializer.Serialize(new
+            var inovicePayload = JsonSerializer.Serialize(new CreateInvoicePayload
             {
-                bookingId = entityToAdd.Id,
-                userId = form.UserId,
-                eventId = form.EventId,
-                ticketQuantity = form.TicketQuantity,
-                ticketPrice = form.TicketPrice
+                BookingId = entityToAdd.Id,
+                UserId = form.UserId,
+                EventId = form.EventId,
+                TicketQuantity = form.TicketQuantity,
+                TicketPrice = form.TicketPrice
             });
-            await _serviceBus.PublishAsync(payload);
+
+            var ticketPayload = JsonSerializer.Serialize(new CreateTicketPayload
+            {
+                BookingId = entityToAdd.Id,
+                UserId = form.UserId,
+                EventId = form.EventId,
+                TicketQuantity = form.TicketQuantity,
+                TicketPrice = form.TicketPrice,
+                TicketCategoryName = form.TicketCategoryName
+            });
+
+            await _invoiceServiceBus.PublishAsync(inovicePayload);
+            await _ticketServiceBusHandler.PublishAsync(ticketPayload);
             await _listener.StartProcessingAsync();
 
             return result.Succeeded

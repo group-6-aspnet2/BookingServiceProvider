@@ -22,7 +22,16 @@ builder.Services.AddSingleton<ServiceBusClient>(provider =>
     return new ServiceBusClient(configuration["ServiceBus:ConnectionString"]);
 });
 
+//builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
+//{
+//    x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
+//});
+//builder.Services.AddGrpcClient<UserContract.UserContractClient>(x =>
+//{
+//    x.Address = new Uri(builder.Configuration["GrpcClients:UserService"]!);
+//});
 builder.Services.AddTransient<IInvoiceServiceBusHandler, InvoiceServiceBusHandler>();
+builder.Services.AddTransient<ITicketServiceBusHandler, TicketServiceBusHandler>();
 builder.Services.AddScoped<IBookingServiceBusListener, BookingServiceBusListener>();
 
 var app = builder.Build();
@@ -37,12 +46,3 @@ app.MapControllers();
 app.Run();
 
 
-
-//builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
-//{
-//    x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
-//});
-//builder.Services.AddGrpcClient<UserContract.UserContractClient>(x =>
-//{
-//    x.Address = new Uri(builder.Configuration["GrpcClients:UserService"]!);
-//});
