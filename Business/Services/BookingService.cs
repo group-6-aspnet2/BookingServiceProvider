@@ -12,7 +12,7 @@ namespace Business.Services;
 
 
 
-public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository /*, EventContract.EventContractClient eventClient, UserContract.UserContractClient userClient */, IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IBookingServiceBusListener listener) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository /*, EventContract.EventContractClient eventClient, UserContract.UserContractClient userClient, IBookingServiceBusListener listener */, IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler) : IBookingService
 {
 
     private readonly IBookingRepository _bookingRepository = bookingRepository;
@@ -21,7 +21,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     //private readonly UserContract.UserContractClient _userClient = userClient;
     private readonly IInvoiceServiceBusHandler _invoiceServiceBus = invoiceServiceBus;
     private readonly ITicketServiceBusHandler _ticketServiceBusHandler = ticketServiceBusHandler;
-    private readonly IBookingServiceBusListener _listener = listener;
+    //private readonly IBookingServiceBusListener _listener = listener;
     public async Task<BookingResult<BookingModel>> GetOneAsync(string id)
     {
         try
@@ -314,7 +314,6 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             if (eventReply != null)
             {
-                // TODO kolla events totalplatser och hämta alla bokningar för detta event. Kolla tillgänglighet. 
                 var allEventBookingsResult = await GetBookingsByEventIdAsync(eventReply.Event.EventId);
                 var totalBookingsToEvent = 0;
 
@@ -323,7 +322,6 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                     {
                         totalBookingsToEvent += booking.TicketQuantity;
                     }
-
 
                 if (eventReply.Event.EventAmountOfGuests - totalBookingsToEvent < form.TicketQuantity)
                     return new BookingResult<BookingModel> { Succeeded = false, Error = "Not enough tickets available for this event" };
@@ -351,13 +349,14 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 TicketCategoryName = form.TicketCategoryName
             });
 
-            await _invoiceServiceBus.PublishAsync(inovicePayload);
-            await _ticketServiceBusHandler.PublishAsync(ticketPayload);
-            await _listener.StartProcessingAsync();
+            if (result.Succeeded)
+            {
+                await _invoiceServiceBus.PublishAsync(inovicePayload);
+                await _ticketServiceBusHandler.PublishAsync(ticketPayload);
+                new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = result.Result };
 
-            return result.Succeeded
-                ? new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = result.Result }
-                : new BookingResult<BookingModel> { Succeeded = false, Error = result.Error, StatusCode = result.StatusCode };
+            }
+            return new BookingResult<BookingModel> { Succeeded = false, Error = result.Error, StatusCode = result.StatusCode };
         }
         catch (Exception ex)
         {
@@ -472,5 +471,5 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     }
 
 
-   
+
 }

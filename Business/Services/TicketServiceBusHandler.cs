@@ -14,8 +14,8 @@ public class TicketServiceBusHandler : ITicketServiceBusHandler
     private readonly ServiceBusSender _sender;
     public TicketServiceBusHandler(IConfiguration configuration)
     {
-        _client = new ServiceBusClient(configuration["ServiceBus:ConnectionString"]);
-        _sender = _client.CreateSender(configuration["ServiceBus:CreateTicketQueueName"]);
+        _client = new ServiceBusClient(configuration["AzureServiceBusSettings:ConnectionString"]);
+        _sender = _client.CreateSender(configuration["AzureServiceBusSettings:CreateTicketQueueName"]);
     }
 
     public async Task PublishAsync(string payload)

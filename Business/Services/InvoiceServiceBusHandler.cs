@@ -15,8 +15,8 @@ public class InvoiceServiceBusHandler : IInvoiceServiceBusHandler
     private readonly ServiceBusSender _sender;
     public InvoiceServiceBusHandler(IConfiguration configuration)
     {
-        _client = new ServiceBusClient(configuration["ServiceBus:ConnectionString"]);
-        _sender = _client.CreateSender(configuration["ServiceBus:CreateInvoiceQueueName"]);
+        _client = new ServiceBusClient(configuration["AzureServiceBusSettings:ConnectionString"]);
+        _sender = _client.CreateSender(configuration["AzureServiceBusSettings:CreateInvoiceQueueName"]);
     }
 
     public async Task PublishAsync(string payload)
