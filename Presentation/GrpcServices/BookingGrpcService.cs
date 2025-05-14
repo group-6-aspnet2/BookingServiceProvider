@@ -32,7 +32,6 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
             var bookingResult = await _bookingService.GetAllBookingsAsync();
             if (bookingResult.Succeeded)
             {
-                //var bookings = bookingResult.Result?.Select(x => x.MapTo<Booking>());
 
                 List<Booking> bookings = [];
                 foreach (var x in bookingResult.Result!)
@@ -162,88 +161,122 @@ public class BookingGrpcService(IBookingService bookingService) : BookingManager
         }
     }
 
-    
-  public override async Task<CreateBookingReply> CreateBooking(CreateBookingRequest request, ServerCallContext context)
-  {
-      try
-      {
-          if (request == null)
-          {
-              return new CreateBookingReply
-              {
-                  Succeeded = false,
-                  Message = "Invalid create request"
-              };
-          }
 
-          
-            var form  = new CreateBookingForm
-          {
-              EventId = request.EventId,
-              UserId = request.UserId,
-              TicketCategoryName = request.TicketCategoryName,
-              TicketPrice = decimal.Parse(request.TicketPrice),
-              TicketQuantity = request.TicketQuantity,
+    public override async Task<CreateBookingReply> CreateBooking(CreateBookingRequest request, ServerCallContext context)
+    {
+        try
+        {
+            if (request == null)
+            {
+                return new CreateBookingReply
+                {
+                    Succeeded = false,
+                    Message = "Invalid create request"
+                };
+            }
+
+            var form = new CreateBookingForm
+            {
+                EventId = request.EventId,
+                UserId = request.UserId,
+                TicketCategoryName = request.TicketCategoryName,
+                TicketPrice = decimal.Parse(request.TicketPrice),
+                TicketQuantity = request.TicketQuantity,
             };
+
             var createResult = await _bookingService.CreateNewBookingAsync(form);
             var booking = createResult.Result?.MapTo<Booking>();
             return createResult.Succeeded
               ? new CreateBookingReply { Succeeded = true, Booking = booking }
               : new CreateBookingReply { Succeeded = false, Message = "Something went wrong when creating the booking" };
 
-      }
-      catch (Exception ex)
-      {
-          Debug.Write(ex.Message);
-          return new CreateBookingReply
-          {
-              Succeeded = false,
-              Message = ex.Message,
-          };
-      }
-  }
+        }
+        catch (Exception ex)
+        {
+            Debug.Write(ex.Message);
+            return new CreateBookingReply
+            {
+                Succeeded = false,
+                Message = ex.Message,
+            };
+        }
+    }
 
 
-    /*
-  public override async Task<CancelBookingReply> CancelBooking(CancelBookingRequest request, ServerCallContext context)
-  {
-      try
-      {
-          // TODO kolla om user är admin eller om userId är samma som bokningens userId 
-          if (string.IsNullOrWhiteSpace(request.Id) || request == null)
-          {
-              return new CancelBookingReply
-              {
-                  Succeeded = false,
-                  Message = "Invalid cancellation request sent."
-              };
-          }
+    public override async Task<CancelBookingReply> CancelBooking(CancelBookingRequest request, ServerCallContext context)
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(request.Id) || request == null)
+            {
+                return new CancelBookingReply
+                {
+                    Succeeded = false,
+                    Message = "Invalid cancellation request sent."
+                };
+            }
 
 
-          var bookingToCancel = await _bookingRepository.GetAsync(x => x.Id == request.Id);
-          if (bookingToCancel == null)
-          {
-              return new CancelBookingReply { Succeeded = false, Message = "Booking to cancel could not be found", StatusCode = 404 };
-          }
+            var bookingToCancel = await _bookingService.GetOneAsync(request.Id);
+            if (bookingToCancel == null)
+            {
+                return new CancelBookingReply { Succeeded = false, Message = "Booking to cancel could not be found", StatusCode = 404 };
+            }
 
-          var result = await _bookingRepository.CancelBookingById(x => x.Id == request.Id, request.StatusId);
-          return result.Succeeded
-              ? new CancelBookingReply { StatusCode = 200, Succeeded = true, Message = $"Booking with id {request.Id} is cancelled" }
-              : new CancelBookingReply { Message = "Booking could not be cancelled", StatusCode = 500, Succeeded = false };
+            var result = await _bookingService.CancelBookingAsync(request.Id);
+            return result.Succeeded
+                ? new CancelBookingReply { StatusCode = 200, Succeeded = true, Message = $"Booking with id {request.Id} is cancelled" }
+                : new CancelBookingReply { Message = "Booking could not be cancelled", StatusCode = 500, Succeeded = false };
+        }
+        catch (Exception ex)
+        {
+            Debug.Write(ex.Message);
+            return new CancelBookingReply
+            {
+                Succeeded = false,
+                Message = ex.Message,
+            };
+        }
+    }
 
+    public async override Task<DeleteBookingReply> DeleteBooking(DeleteBookingRequest request, ServerCallContext context)
+    {
+        try
+        {
+            if (request == null)
+            {
+                return new DeleteBookingReply
+                {
+                    Succeeded = false,
+                    Message = "Invalid delete request"
+                };
+            }
 
-      }
-      catch (Exception ex)
-      {
-          Debug.Write(ex.Message);
-          return new CancelBookingReply
-          {
-              Succeeded = false,
-              Message = ex.Message,
-          };
-      }
-  }
-  */
+            var result = await _bookingService.DeleteBookingWithTickets(request.Id);
+            return result.Succeeded ? new DeleteBookingReply
+            {
+                Succeeded = true,
+                Message = $"Booking with id {request.Id} is deleted",
+                StatusCode = 200
+            } : new DeleteBookingReply
+            {
+                Succeeded = false,
+                Message = "Something went wrong when deleting the booking",
+                StatusCode = 500
+            };
+        }
+        catch (Exception ex)
+        {
+            Debug.Write(ex.Message);
+            return new DeleteBookingReply
+            {
+                Succeeded = false,
+                Message = ex.Message,
+                StatusCode = 500
+            };
+        }
+    }
+
 }
 
 
