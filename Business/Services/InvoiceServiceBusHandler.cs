@@ -22,6 +22,7 @@ public class InvoiceServiceBusHandler : IInvoiceServiceBusHandler
     public async Task PublishAsync(string payload)
     {
         var message = new ServiceBusMessage(payload);
+        Console.WriteLine($"Sending message: {payload}");
         await _sender.SendMessageAsync(message);
         await _sender.DisposeAsync();
         await _client.DisposeAsync();

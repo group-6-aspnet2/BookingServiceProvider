@@ -1,13 +1,30 @@
 using Azure.Messaging.ServiceBus;
+using Business;
 using Business.Interfaces;
 using Business.Services;
 using Data.Contexts;
 using Data.Interfaces;
 using Data.Repositories;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Presentation.GrpcServices;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(5200, listenOptions =>
+    {
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+    });
+
+    options.ListenAnyIP(7221, listenOptions =>
+    {
+        listenOptions.UseHttps();
+        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
+    });
+});
+
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 builder.Services.AddGrpc();
@@ -22,11 +39,12 @@ builder.Services.AddSingleton<ServiceBusClient>(provider =>
     return new ServiceBusClient(configuration["ServiceBus:ConnectionString"]);
 });
 
+builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
+{
+    //x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
+    x.Address = new Uri("https://localhost:7388");
+});
 
-//builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
-//{
-//    x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
-//});
 //builder.Services.AddGrpcClient<UserContract.UserContractClient>(x =>
 //{
 //    x.Address = new Uri(builder.Configuration["GrpcClients:UserService"]!);

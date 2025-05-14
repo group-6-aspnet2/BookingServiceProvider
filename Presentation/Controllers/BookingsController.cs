@@ -9,7 +9,7 @@ namespace Presentation.Controllers;
 public class BookingsController(IBookingService bookingService) : ControllerBase
 {
     private readonly IBookingService _bookingService = bookingService;
-
+   
     // ADMIN och USER som står på bokningen
     [HttpGet("{id}")]
     public async Task<IActionResult> GetBookingById(string id)
@@ -31,7 +31,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
         }
     }
 
-
+   
     // ADMIN
     [HttpGet]
     public async Task<IActionResult> GetBookings()
@@ -51,7 +51,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
             return Problem(detail: ex.Message, statusCode: 500);
         }
     }
-
+   
     // ADMIN
     [HttpGet("status/{statusId}")]
     public async Task<IActionResult> GetBookingsByStatus(int statusId)
