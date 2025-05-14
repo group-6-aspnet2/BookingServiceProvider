@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "Presentation.AzureFunctions": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7003",
+      "launchBrowser": false
+    }
+  }
+}
