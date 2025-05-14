@@ -14,5 +14,5 @@ public interface IBookingService
     Task<BookingResult<IEnumerable<BookingModel>>> GetBookingsByUserIdAsync(string userId);
     Task<BookingResult<BookingModel>> GetOneAsync(string id);
     Task<BookingResult<BookingModel>> UpdateBookingAsync(UpdateBookingForm form);
-    //Task<BookingResult<BookingModel>> UpdateBookingWithInvoiceId(string bookingId, string invoiceId);
+    Task<BookingResult<BookingModel>> UpdateBookingInvoiceIdAsync(UpdateBookingInvoiceIdForm form);
 }
