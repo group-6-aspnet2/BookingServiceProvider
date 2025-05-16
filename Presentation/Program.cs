@@ -1,5 +1,4 @@
 using Azure.Messaging.ServiceBus;
-using Business;
 using Business.Interfaces;
 using Business.Services;
 using Data.Contexts;
@@ -8,6 +7,8 @@ using Data.Repositories;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Presentation.GrpcServices;
+using Microsoft.Extensions.Hosting;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -36,20 +37,10 @@ builder.Services.AddScoped<IBookingService, BookingService>();
 builder.Services.AddSingleton<ServiceBusClient>(provider =>
 {
     var configuration = provider.GetRequiredService<IConfiguration>();
-    return new ServiceBusClient(configuration["ServiceBus:ConnectionString"]);
+    return new ServiceBusClient(configuration["AzureServiceBusSettings:ConnectionString"]);
 });
 
-builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
-{
-    //x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
-    x.Address = new Uri("https://localhost:7388");
-});
-
-//builder.Services.AddGrpcClient<UserContract.UserContractClient>(x =>
-//{
-//    x.Address = new Uri(builder.Configuration["GrpcClients:UserService"]!);
-//});
-
+builder.Services.AddHostedService<UpdateBookingQueueBackgroundService>();
 builder.Services.AddScoped<IInvoiceServiceBusHandler, InvoiceServiceBusHandler>();
 builder.Services.AddScoped<ITicketServiceBusHandler, TicketServiceBusHandler>();
 
@@ -59,9 +50,19 @@ app.MapGrpcService<BookingGrpcService>();
 
 app.MapOpenApi();
 app.UseHttpsRedirection();
-app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+app.UseCors(x => x/*.WithOrigins("http://localhost:5173")*/.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
 
 
+//builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
+//{
+//    //x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
+//    x.Address = new Uri("https://localhost:7388");
+//});
+
+//builder.Services.AddGrpcClient<UserContract.UserContractClient>(x =>
+//{
+//    x.Address = new Uri(builder.Configuration["GrpcClients:UserService"]!);
+//});

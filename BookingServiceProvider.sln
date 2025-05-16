@@ -11,8 +11,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Business", "Business\Business.csproj", "{BEBE4C28-47D9-4CFD-B67B-B0E15FCAA25D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Presentation.AzureFunctions", "Presentation.AzureFunctions\Presentation.AzureFunctions.csproj", "{953ADFA5-D139-4EE5-90A9-AAA00CD62740}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -35,10 +33,6 @@ Global
 		{BEBE4C28-47D9-4CFD-B67B-B0E15FCAA25D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BEBE4C28-47D9-4CFD-B67B-B0E15FCAA25D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BEBE4C28-47D9-4CFD-B67B-B0E15FCAA25D}.Release|Any CPU.Build.0 = Release|Any CPU
-		{953ADFA5-D139-4EE5-90A9-AAA00CD62740}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{953ADFA5-D139-4EE5-90A9-AAA00CD62740}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{953ADFA5-D139-4EE5-90A9-AAA00CD62740}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{953ADFA5-D139-4EE5-90A9-AAA00CD62740}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
