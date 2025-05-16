@@ -1,20 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Domain.Models;
 
-namespace Domain.Models;
-
-public class CreateBookingForm
+public class CreateBookingRequestModel
 {
-    [Required]
     public string EventId { get; set; } = null!;
-    [Required]
     public string TicketCategoryName { get; set; } = null!;
-    [Required]
     public decimal TicketPrice { get; set; }
-    [Required]
     public int TicketQuantity { get; set; }
-    [Required]
+    public int StatusId { get; set; }
     public string UserId { get; set; } = null!;
-
 }
-
-

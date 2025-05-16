@@ -8,20 +8,6 @@ option csharp_namespace = "Presentation";
 package booking;
 import "google/protobuf/timestamp.proto";
 
-/* 
-e voucher
-- firstName
-- lastName
-- ticketCategory
-- seatNumber 
-- gate
-- eventName
-- eventCategory
-- eventLocation 
-- date
-- time 
-- eventSchedule
-*/
 
 service BookingManager {
   rpc GetBookings (GetBookingsRequest) returns (GetBookingsReply); // admin
@@ -29,7 +15,8 @@ service BookingManager {
   rpc GetBookingsByUserId (GetBookingsByUserIdRequest) returns (GetBookingsByUserIdReply); // admin och user om userId är samma som bokningens userId
   rpc GetOneBooking (GetOneBookingRequest) returns (GetOneBookingReply); // admin och user (om userid är samma som bookingens userid))
   rpc CreateBooking (CreateBookingRequest) returns (CreateBookingReply); // admin och user
-  rpc CancelBooking (CancelBookingRequest) returns (CancelBookingReply); // admin och user
+  rpc CancelBooking (CancelBookingRequest) returns (CancelBookingReply); // admin och user, ska finnas??
+  rpc DeleteBooking (DeleteBookingRequest) returns (DeleteBookingReply); // ska finnas??
 
 }
 
@@ -39,22 +26,13 @@ message GetBookingsRequest {
 message Booking {
 	string id = 1;
 	string user_id = 2;	
-	string first_name = 3;  // ta bort? hämtas med userId
-	string last_name = 4; // ta bort? hämtas med userId
-	string email = 5;  // ta bort? hämtas med userId
-	string phone_number = 6;  // ta bort? hämtas med userId
-	google.protobuf.Timestamp event_date = 7; // TODO fråga hans om date? datatyp?
-	string event_id = 8;
-	string event_name = 9;
-	string event_category_name = 10;
-	string ticket_category_name = 11; 
-	string ticket_price = 12;
-	int32 ticket_quantity = 13;
-	string total_price = 14;
-	int32 status_id = 15; 
-	string e_voucher_id = 16; 
-	string invoice_id = 17;
-	google.protobuf.Timestamp create_date = 18;
+	string invoice_id = 3;
+	int32 status_id = 4; 
+	string event_id = 5;
+	string ticket_price = 6;
+	int32 ticket_quantity = 7;
+	string ticket_category_name = 8; 
+	google.protobuf.Timestamp create_date = 9;
 }
 
 message GetBookingsReply {
@@ -96,54 +74,36 @@ message GetOneBookingReply  {
 }
 
 message CreateBookingRequest{
-	string status = 1;
-	string user_id = 2;	
-	string first_name = 3;  // ta bort? hämtas med userId
-	string last_name = 4; // ta bort? hämtas med userId
-	string email = 5;  // ta bort? hämtas med userId
-	string phone_number = 6;  // ta bort? hämtas med userId
-	google.protobuf.Timestamp event_date = 7; // TODO fråga hans om date? datatyp?
-	string event_id = 8;
-	string event_name = 9;
-	string event_category_name = 10;
-	string ticket_category_name = 11; 
-	string ticket_price = 12;
-	int32 ticket_quantity = 13;
-	string total_price = 14;
-	int32 status_id = 15; 
-	string e_voucher_id = 16; 
-	string invoice_id = 17;
+	string user_id = 1;	
+	string event_id = 5;
+	string ticket_price = 6;
+	int32 ticket_quantity = 7;
+	string ticket_category_name = 8; 
 }
 
 message CreateBookingReply{
 	bool succeeded = 1;
 	string message = 2;
-	Booking booking = 3; // TODO: ska vi skicka tillbaka hela bokningen eller bara id?
+	Booking booking = 3; 
 }
 
 message CancelBookingRequest{
 	string id = 1;
-	string user_id = 2;	
-	string first_name = 3;  // ta bort? hämtas med userId
-	string last_name = 4; // ta bort? hämtas med userId
-	string email = 5;  // ta bort? hämtas med userId
-	string phone_number = 6;  // ta bort? hämtas med userId
-	google.protobuf.Timestamp event_date = 7; // TODO fråga hans om date? datatyp?
-	string event_id = 8;
-	string event_name = 9;
-	string event_category_name = 10;
-	string ticket_category_name = 11; 
-	string ticket_price = 12;
-	int32 ticket_quantity = 13;
-	string total_price = 14;
-	int32 status_id = 15; 
-	string e_voucher_id = 16; 
-	string invoice_id = 17;
-	google.protobuf.Timestamp create_date = 18;
 
 }
 
 message CancelBookingReply{
+	bool succeeded = 1;
+	string message = 2;
+	int32 status_code = 3;
+}
+
+message DeleteBookingRequest {
+	string id = 1;
+
+}
+
+message DeleteBookingReply {
 	bool succeeded = 1;
 	string message = 2;
 	int32 status_code = 3;

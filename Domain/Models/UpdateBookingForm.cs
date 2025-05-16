@@ -1,21 +1,23 @@
-﻿namespace Domain.Models;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Domain.Models;
 
 public class UpdateBookingForm
 {
+    [Required]
     public string Id { get; set; } = null!;
+    [Required]
     public string EventId { get; set; } = null!;
-    public string EventName { get; set; } = null!;
-    public string EventCategoryName { get; set; } = null!;
-    public DateTime EventDate { get; set; }
-    public string InvoiceId { get; set; } = null!;  // sätts när invoice skapats i sin service provider
+    [Required]
+    public string InvoiceId { get; set; } = null!;
+    [Required]
     public string TicketCategoryName { get; set; } = null!;
+    [Required]
     public decimal TicketPrice { get; set; }
+    [Required]
     public int TicketQuantity { get; set; }
+    [Required]
     public int StatusId { get; set; }
-    public string EVoucherId { get; set; } = null!;  // sätts när evoucher skapats i sin service provider
+    [Required]
     public string UserId { get; set; } = null!;
-    public string FirstName { get; set; } = null!;
-    public string LastName { get; set; } = null!;
-    public string Email { get; set; } = null!;
-    public string PhoneNumber { get; set; } = null!;
 }
