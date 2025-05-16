@@ -1,6 +1,6 @@
 ﻿namespace Domain.Models;
 
-public class CreateBookingRequest
+public class CreateBookingRequestModel
 {
     public string EventId { get; set; } = null!;
     public string TicketCategoryName { get; set; } = null!;
