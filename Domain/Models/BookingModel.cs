@@ -14,6 +14,7 @@ public class BookingModel
     public decimal TicketPrice { get; set; }
     public int TicketQuantity { get; set; }
     public int StatusId { get; set; }
+    public string StatusName { get; set; } = null!;
     public string UserId { get; set; } = null!;
     public string FirstName { get; set; } = null!;
     public string LastName { get; set; } = null!;
