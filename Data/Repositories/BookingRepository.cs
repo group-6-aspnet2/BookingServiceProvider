@@ -77,12 +77,6 @@ public class BookingRepository(DataContext context) : BaseRepository<BookingEnti
 
             var entities = await query.ToListAsync();
           
-          //  var result = entities.Select(entity => {
-          //      var model = entity.MapTo<BookingModel>();
-          //      model.StatusName = entity.Status.StatusName;
-          //      return model;
-          //      }
-          //);
             var resultModels =new List<BookingModel>();
 
 
