@@ -5,7 +5,6 @@ using Business.Services;
 using Data.Contexts;
 using Data.Interfaces;
 using Data.Repositories;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Presentation.GrpcServices;
 
@@ -42,15 +41,9 @@ app.MapGrpcService<BookingGrpcService>();
 
 app.MapOpenApi();
 app.UseHttpsRedirection();
-app.UseCors(x => x/*.WithOrigins("http://localhost:5173")*/.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
+app.UseCors(x => x.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod());
 app.UseAuthorization();
 app.MapControllers();
 app.Run();
 
 
-
-
-//builder.Services.AddGrpcClient<UserContract.UserContractClient>(x =>
-//{
-//    x.Address = new Uri(builder.Configuration["GrpcClients:UserService"]!);
-//});
