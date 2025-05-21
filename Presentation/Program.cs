@@ -1,4 +1,5 @@
 using Azure.Messaging.ServiceBus;
+using Business;
 using Business.Interfaces;
 using Business.Services;
 using Data.Contexts;
@@ -7,24 +8,10 @@ using Data.Repositories;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.EntityFrameworkCore;
 using Presentation.GrpcServices;
-using Microsoft.Extensions.Hosting;
 
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.ConfigureKestrel(options =>
-{
-    options.ListenAnyIP(5200, listenOptions =>
-    {
-        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-    });
-
-    options.ListenAnyIP(7221, listenOptions =>
-    {
-        listenOptions.UseHttps();
-        listenOptions.Protocols = HttpProtocols.Http1AndHttp2;
-    });
-});
 
 builder.Services.AddControllers();
 builder.Services.AddOpenApi();
@@ -40,9 +27,14 @@ builder.Services.AddSingleton<ServiceBusClient>(provider =>
     return new ServiceBusClient(configuration["AzureServiceBusSettings:ConnectionString"]);
 });
 
-builder.Services.AddHostedService<UpdateBookingQueueBackgroundService>();
-builder.Services.AddScoped<IInvoiceServiceBusHandler, InvoiceServiceBusHandler>();
-builder.Services.AddScoped<ITicketServiceBusHandler, TicketServiceBusHandler>();
+builder.Services.AddHostedService<UpdateBookingQueueBackgroundService>(); // listener 
+builder.Services.AddScoped<IInvoiceServiceBusHandler, InvoiceServiceBusHandler>(); // publisher
+builder.Services.AddScoped<ITicketServiceBusHandler, TicketServiceBusHandler>(); // publisher
+builder.Services.AddScoped<IEmailBookingConfirmationServiceBusHandler, EmailBookingConfirmationServiceBusHandler>(); // publisher
+builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
+{
+    x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
+});
 
 var app = builder.Build();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
@@ -56,11 +48,7 @@ app.MapControllers();
 app.Run();
 
 
-//builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
-//{
-//    //x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
-//    x.Address = new Uri("https://localhost:7388");
-//});
+
 
 //builder.Services.AddGrpcClient<UserContract.UserContractClient>(x =>
 //{

@@ -1,13 +1,9 @@
 ﻿using Azure.Messaging.ServiceBus;
+using Business.Interfaces;
 using Microsoft.Extensions.Configuration;
 using System.Text.Json;
 
 namespace Business.Services;
-
-public interface IInvoiceServiceBusHandler
-{
-    Task PublishAsync(string payload);
-}
 
 public class InvoiceServiceBusHandler : IInvoiceServiceBusHandler
 {

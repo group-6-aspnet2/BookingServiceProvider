@@ -12,16 +12,18 @@ namespace Business.Services;
 
 
 
-public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository,/* EventContract.EventContractClient eventClient  , UserContract.UserContractClient userClient, IBookingServiceBusListener listener */ IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient  ,/* UserContract.UserContractClient userClient, IBookingServiceBusListener listener */ IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailBookingConfirmationServiceBusHandler emailServiceBusHandler) : IBookingService
 {
 
     private readonly IBookingRepository _bookingRepository = bookingRepository;
     private readonly IBookingStatusRepository _bookingStatusRepository = bookingStatusRepository;
-    //private readonly EventContract.EventContractClient _eventClient = eventClient;
+    private readonly EventContract.EventContractClient _eventClient = eventClient;
+    //private readonly UserContract.UserContractClient _userClient = userClient;
+
     private readonly IInvoiceServiceBusHandler _invoiceServiceBus = invoiceServiceBus;
     private readonly ITicketServiceBusHandler _ticketServiceBusHandler = ticketServiceBusHandler;
-    //private readonly UserContract.UserContractClient _userClient = userClient;
-    //private readonly IBookingServiceBusListener _listener = listener;
+    private readonly IEmailBookingConfirmationServiceBusHandler _emailServiceBusHandler = emailServiceBusHandler;
+
 
     public async Task<BookingResult<BookingModel>> GetOneAsync(string id)
     {
@@ -33,20 +35,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             var booking = result.Result;
 
-            var eventResult = new GetEventByIdReply
-            {
-                Event = new Event
-                {
-                    EventId = booking.EventId,
-                    EventName = "Green Day World Tour",
-                    EventCategoryName = "Music",
-                    EventDate = DateOnly.FromDateTime(DateTime.Now).ToString(),
-                    EventTime = TimeOnly.FromDateTime(DateTime.Now).ToString(),
-                    EventLocation = "Arenavägen 19, 121 41 Stockholm",
-                    EventStatus = "Upcoming",
-                }
-            };
-            //var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
+            var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
             var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
             var userResult = new GetUserByIdReply
@@ -83,20 +72,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             foreach (var booking in bookingResult.Result!)
             {
-                var eventResult = new GetEventByIdReply
-                {
-                    Event = new Event
-                    {
-                        EventId = booking.EventId,
-                        EventName = "Green Day World Tour",
-                        EventCategoryName = "Music",
-                        EventDate = DateOnly.FromDateTime(DateTime.Now).ToString(),
-                        EventTime = TimeOnly.FromDateTime(DateTime.Now).ToString(),
-                        EventLocation = "Arenavägen 19, 121 41 Stockholm",
-                        EventStatus = "Upcoming",
-                    }
-                };
-                //var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
+                var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
                 var userResult = new GetUserByIdReply
@@ -137,20 +113,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             foreach (var booking in bookingResult.Result!)
             {
-                var eventResult = new GetEventByIdReply
-                {
-                    Event = new Event
-                    {
-                        EventId = booking.EventId,
-                        EventName = "Green Day World Tour",
-                        EventCategoryName = "Music",
-                        EventDate = DateOnly.FromDateTime(DateTime.Now).ToString(),
-                        EventTime = TimeOnly.FromDateTime(DateTime.Now).ToString(),
-                        EventLocation = "Arenavägen 19, 121 41 Stockholm",
-                        EventStatus = "Upcoming",
-                    }
-                };
-                //var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
+                var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
                 var userResult = new GetUserByIdReply
@@ -181,7 +144,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     {
         try
         {
-            var bookingResult = await _bookingRepository.GetAllAsyncWithStatus(orderByDescending: true, sortByColumn: x => x.CreateDate, filterBy: x => x.UserId == userId,includes: x => x.Status);
+            var bookingResult = await _bookingRepository.GetAllAsyncWithStatus(orderByDescending: true, sortByColumn: x => x.CreateDate, filterBy: x => x.UserId == userId, includes: x => x.Status);
 
             if (bookingResult.Succeeded == false)
                 return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = bookingResult.StatusCode, Error = bookingResult.Error };
@@ -190,20 +153,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             foreach (var booking in bookingResult.Result!)
             {
-                var eventResult = new GetEventByIdReply
-                {
-                    Event = new Event
-                    {
-                        EventId = booking.EventId,
-                        EventName = "Green Day World Tour",
-                        EventCategoryName = "Music",
-                        EventDate = DateOnly.FromDateTime(DateTime.Now).ToString(),
-                        EventTime = TimeOnly.FromDateTime(DateTime.Now).ToString(),
-                        EventLocation = "Arenavägen 19, 121 41 Stockholm",
-                        EventStatus = "Upcoming",
-                    }
-                };
-                //var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
+                var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
                 var userResult = new GetUserByIdReply
@@ -244,20 +194,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             foreach (var booking in bookingResult.Result!)
             {
-                var eventResult = new GetEventByIdReply
-                {
-                    Event = new Event
-                    {
-                        EventId = booking.EventId,
-                        EventName = "Green Day World Tour",
-                        EventCategoryName = "Music",
-                        EventDate = DateOnly.FromDateTime(DateTime.Now).ToString(),
-                        EventTime = TimeOnly.FromDateTime(DateTime.Now).ToString(),
-                        EventLocation = "Arenavägen 19, 121 41 Stockholm",
-                        EventStatus = "Upcoming",
-                    }
-                };
-                //var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
+                var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
                 var userResult = new GetUserByIdReply
@@ -284,7 +221,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, Error = ex.Message, StatusCode = 500 };
         }
     }
-  
+
 
     public async Task<BookingResult<BookingModel>> CreateNewBookingAsync(CreateBookingForm form)
     {
@@ -297,24 +234,10 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             createRequest.StatusId = 1;
 
             var eventRequest = new GetEventByIdRequest { EventId = form.EventId };
-            //GetEventByIdReply eventReply = await _eventClient.GetEventByIdAsync(eventRequest);
+            GetEventByIdReply eventReply = await _eventClient.GetEventByIdAsync(eventRequest);
 
-            var eventReply = new GetEventByIdReply
+            if (eventReply != null)
             {
-                Event = new Event
-                {
-                    EventId = form.EventId,
-                    EventName = "Hammarby Fotboll",
-                    EventCategoryName = "Sport",
-                    EventDate = DateOnly.FromDateTime(DateTime.Now).ToString(),
-                    EventTime = TimeOnly.FromDateTime(DateTime.Now).ToString(),
-                    EventAmountOfGuests = 30000,
-                    EventLocation = "Arenavägen 19, 121 41 Stockholm",
-                    EventStatus = "Upcoming",
-                }
-            };
-
-            if (eventReply != null) { 
                 var allEventBookingsResult = await GetBookingsByEventIdAsync(eventReply.Event.EventId);
                 var totalBookingsToEvent = 0;
 
@@ -337,7 +260,9 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 UserId = form.UserId,
                 EventId = form.EventId,
                 TicketQuantity = form.TicketQuantity,
-                TicketPrice = form.TicketPrice
+                TicketPrice = form.TicketPrice,
+                TicketCategoryName = form.TicketCategoryName
+
             });
 
             var ticketPayload = JsonSerializer.Serialize(new CreateTicketPayload
@@ -350,10 +275,18 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 TicketCategoryName = form.TicketCategoryName
             });
 
+            var emailPayload = JsonSerializer.Serialize(new
+            {
+                BookingId = entityToAdd.Id
+            });
+
+
             if (result.Succeeded)
             {
                 await _invoiceServiceBus.PublishAsync(inovicePayload);
                 await _ticketServiceBusHandler.PublishAsync(ticketPayload);
+                await _emailServiceBusHandler.PublishAsync(emailPayload);
+
 
                 var bookingModel = result.Result!.MapTo<BookingModel>();
                 bookingModel.EventName = eventReply!.Event.EventName;
@@ -370,7 +303,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
         {
             Debug.WriteLine(ex.Message);
             return new BookingResult<BookingModel> { Succeeded = false, Error = ex.Message, StatusCode = 500 };
-        }/* */
+        }
     }
 
     public async Task<BookingResult<BookingModel>> UpdateBookingAsync(UpdateBookingForm form)
@@ -397,10 +330,11 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                     }
                 }
 
-            /*
-            if(event.totalAmountOfGuests - totalEventBookings < form.TicketQuantity)
+            var eventRequest = new GetEventByIdRequest { EventId = form.EventId };
+            GetEventByIdReply eventReply = await _eventClient.GetEventByIdAsync(eventRequest);
+
+            if (eventReply.Event.EventAmountOfGuests - totalEventBookings < form.TicketQuantity)
                 return new BookingResult<BookingModel> { Succeeded = false, Error = "Not enough tickets available for this event" };
-            */
 
             var result = await _bookingRepository.UpdateBookingFromModelAsync(model);
 
@@ -482,7 +416,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     {
         try
         {
-            if(form == null || string.IsNullOrWhiteSpace(form.BookingId) || string.IsNullOrWhiteSpace(form.InvoiceId))
+            if (form == null || string.IsNullOrWhiteSpace(form.BookingId) || string.IsNullOrWhiteSpace(form.InvoiceId))
                 return new BookingResult<BookingModel> { Succeeded = false, Error = "Invalid ids provided" };
 
             var booking = await _bookingRepository.GetAsync(x => x.Id == form.BookingId);
@@ -495,7 +429,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             var result = await _bookingRepository.UpdateBookingFromModelAsync(updatedModel);
 
-            return result.Succeeded 
+            return result.Succeeded
                 ? new BookingResult<BookingModel> { Succeeded = true, StatusCode = 204, Result = updatedModel }
                 : new BookingResult<BookingModel> { Succeeded = false, StatusCode = 500, Error = "Something went wrong when updating the booking" };
         }
