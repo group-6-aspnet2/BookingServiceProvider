@@ -12,7 +12,7 @@ namespace Business.Services;
 
 
 
-public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient  ,/* UserContract.UserContractClient userClient, IBookingServiceBusListener listener */ IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailBookingConfirmationServiceBusHandler emailServiceBusHandler) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient,/* UserContract.UserContractClient userClient, IBookingServiceBusListener listener */ IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailBookingConfirmationServiceBusHandler emailServiceBusHandler, IEmailService emailService) : IBookingService
 {
 
     private readonly IBookingRepository _bookingRepository = bookingRepository;
@@ -23,7 +23,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     private readonly IInvoiceServiceBusHandler _invoiceServiceBus = invoiceServiceBus;
     private readonly ITicketServiceBusHandler _ticketServiceBusHandler = ticketServiceBusHandler;
     private readonly IEmailBookingConfirmationServiceBusHandler _emailServiceBusHandler = emailServiceBusHandler;
-
+    private readonly IEmailService _emailService = emailService;
 
     public async Task<BookingResult<BookingModel>> GetOneAsync(string id)
     {
@@ -275,17 +275,21 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 TicketCategoryName = form.TicketCategoryName
             });
 
-            var emailPayload = JsonSerializer.Serialize(new
-            {
-                BookingId = entityToAdd.Id
-            });
 
+            var emailPayload = new BookingConfirmationRequest
+            {
+                BookingId = entityToAdd.Id,
+                UserId = form.UserId,
+                EventId = form.EventId,
+                UserEmail = "petra.elgemyr@gmail.com" // TODO: hämta rätt email baserat på userId, nu har jag hårdkodat till min mejl för att testa mejlfunktion
+            };
 
             if (result.Succeeded)
             {
                 await _invoiceServiceBus.PublishAsync(inovicePayload);
                 await _ticketServiceBusHandler.PublishAsync(ticketPayload);
-                await _emailServiceBusHandler.PublishAsync(emailPayload);
+                //await _emailServiceBusHandler.PublishAsync(emailPayload);
+                await _emailService.SendBookingConfirmationAsync(emailPayload);
 
 
                 var bookingModel = result.Result!.MapTo<BookingModel>();

@@ -35,6 +35,11 @@ builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
     x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
 });
 
+builder.Services.AddHttpClient<IEmailService, EmailService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["HttpClients:EmailService"]!);
+});
+
 var app = builder.Build();
 app.MapGet("/", () => "Communication with gRPC endpoints must be made through a gRPC client. To learn how to create a client, visit: https://go.microsoft.com/fwlink/?linkid=2086909");
 app.MapGrpcService<BookingGrpcService>();
