@@ -24,9 +24,6 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     private readonly IEmailRestService _emailService = emailService;
     private readonly IAccountRestService _accountRestService = accountRestService;
     private readonly IProfileRestService _profileRestService = profileRestService;
-    private readonly IMemoryCache _cache = cache;
-    private readonly TimeSpan _cacheExpiration = TimeSpan.FromSeconds(45);
-
 
     public async Task<BookingResult<BookingModel>> GetOneAsync(string id)
     {
@@ -66,45 +63,71 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     {
         try
         {
-            const string cacheKey = "AllBookings";
+            var bookingResult = await _bookingRepository.GetAllAsyncWithStatus(orderByDescending: true, sortByColumn: x => x.CreateDate, includes: x => x.Status);
+            if (bookingResult.Succeeded == false)
+                return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = bookingResult.StatusCode, Error = bookingResult.Error };
 
-            if (!_cache.TryGetValue(cacheKey, out IEnumerable<BookingModel>? cacheModels))
+            var bookingsWithEventAndUserData = new List<BookingModel>();
+            var events = new List<Event>();
+            var accounts = new List<AccountModel>();
+            var profiles = new List<ProfileModel>();
+
+            foreach (var booking in bookingResult.Result!)
             {
+                var bookingWithEvent = new BookingModel();
+                var bookingWithAllData = new BookingModel();
 
-                var bookingResult = await _bookingRepository.GetAllAsyncWithStatus(orderByDescending: true, sortByColumn: x => x.CreateDate, includes: x => x.Status);
-                if (bookingResult.Succeeded == false)
-                    return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = bookingResult.StatusCode, Error = bookingResult.Error };
-
-                var cacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(_cacheExpiration);
-                _cache.Set(cacheKey, bookingResult.Result, cacheEntryOptions);
-
-                var bookingsWithEventAndUserData = new List<BookingModel>();
-
-                foreach (var booking in bookingResult.Result!)
+                if (!events.Any(x => x.EventId == booking.EventId))
                 {
                     var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
-                    var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
+
+                    if (!eventResult.Succeeded)
+                        return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = 404, Error = "Could not fetch event" };
+
+                    events.Add(eventResult.Event);
+                    bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
+                }
+                else
+                {
+                    bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, events.FirstOrDefault(x => x.EventId == booking.EventId)!);
+                }
+
+
+
+                if (!accounts.Any(x => x.Id == booking.UserId))
+                {
 
                     var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
                     if (accountResult == null)
                         return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
 
-                    var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+                    bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
 
+                    accounts.Add(accountResult);
+                }
+                else
+                {
+                    bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accounts.FirstOrDefault(x => x.Id == booking.UserId)!);
+                }
+
+                if (!profiles.Any(x => x.Id == booking.UserId))
+                {
                     var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
                     if (profileResult == null)
                         return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
 
                     bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
-
-                    bookingsWithEventAndUserData.Add(bookingWithAllData!);
+                    profiles.Add(profileResult);
                 }
-
-                return new BookingResult<IEnumerable<BookingModel>> { Succeeded = true, Result = bookingsWithEventAndUserData, StatusCode = bookingResult.StatusCode };
-
+                else
+                {
+                    bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profiles.FirstOrDefault(x => x.Id == booking.UserId)!);
+                }
+                bookingsWithEventAndUserData.Add(bookingWithAllData!);
             }
 
-            return new BookingResult<IEnumerable<BookingModel>> { Succeeded = true, Result = cacheModels, StatusCode = 200 };
+            return new BookingResult<IEnumerable<BookingModel>> { Succeeded = true, Result = bookingsWithEventAndUserData, StatusCode = bookingResult.StatusCode };
+
 
         }
         catch (Exception ex)

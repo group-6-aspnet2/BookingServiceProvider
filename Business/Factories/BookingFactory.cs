@@ -12,10 +12,10 @@ public static class BookingFactory
             ArgumentNullException.ThrowIfNull(booking);
             ArgumentNullException.ThrowIfNull(bookingEvent);
 
-            booking.EventName = bookingEvent.EventName;
+            booking.EventName = bookingEvent.EventName ?? "";
             booking.EventDate = DateOnly.Parse(bookingEvent.EventDate);
             booking.EventTime = TimeOnly.Parse(bookingEvent.EventTime);
-            booking.EventCategoryName = bookingEvent.EventCategoryName;
+            booking.EventCategoryName = bookingEvent.EventCategoryName ?? "";
 
             return booking;
         }
@@ -32,7 +32,7 @@ public static class BookingFactory
             ArgumentNullException.ThrowIfNull(booking);
             ArgumentNullException.ThrowIfNull(bookingAccount);
 
-            booking.Email = bookingAccount.Email;
+            booking.Email = bookingAccount.Email ?? "";
             booking.PhoneNumber = bookingAccount.PhoneNumber ?? "";
 
             return booking;
