@@ -19,6 +19,7 @@ builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer(builder.Configura
 builder.Services.AddScoped<IBookingStatusRepository, BookingStatusRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IBookingStatusService, BookingStatusService>();
 
 builder.Services.AddSingleton<ServiceBusClient>(provider =>
 {
@@ -29,10 +30,27 @@ builder.Services.AddSingleton<ServiceBusClient>(provider =>
 builder.Services.AddHostedService<UpdateBookingQueueBackgroundService>(); // listener 
 builder.Services.AddScoped<IInvoiceServiceBusHandler, InvoiceServiceBusHandler>(); // publisher
 builder.Services.AddScoped<ITicketServiceBusHandler, TicketServiceBusHandler>(); // publisher
-builder.Services.AddScoped<IEmailBookingConfirmationServiceBusHandler, EmailBookingConfirmationServiceBusHandler>(); // publisher
+
 builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
 {
     x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
+});
+
+
+
+builder.Services.AddHttpClient<IEmailRestService, EmailRestService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["HttpClients:EmailService"]!);
+});
+
+builder.Services.AddHttpClient<IAccountRestService, AccountRestService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["HttpClients:AccountService"]!);
+});
+
+builder.Services.AddHttpClient<IProfileRestService, ProfileRestService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["HttpClients:ProfileService"]!);
 });
 
 var app = builder.Build();

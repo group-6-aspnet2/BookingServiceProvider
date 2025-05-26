@@ -12,18 +12,17 @@ namespace Business.Services;
 
 
 
-public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient  ,/* UserContract.UserContractClient userClient, IBookingServiceBusListener listener */ IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailBookingConfirmationServiceBusHandler emailServiceBusHandler) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient, IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailRestService emailService, IAccountRestService accountRestService, IProfileRestService profileRestService) : IBookingService
 {
 
     private readonly IBookingRepository _bookingRepository = bookingRepository;
     private readonly IBookingStatusRepository _bookingStatusRepository = bookingStatusRepository;
     private readonly EventContract.EventContractClient _eventClient = eventClient;
-    //private readonly UserContract.UserContractClient _userClient = userClient;
-
     private readonly IInvoiceServiceBusHandler _invoiceServiceBus = invoiceServiceBus;
     private readonly ITicketServiceBusHandler _ticketServiceBusHandler = ticketServiceBusHandler;
-    private readonly IEmailBookingConfirmationServiceBusHandler _emailServiceBusHandler = emailServiceBusHandler;
-
+    private readonly IEmailRestService _emailService = emailService;
+    private readonly IAccountRestService _accountRestService = accountRestService;
+    private readonly IProfileRestService _profileRestService = profileRestService;
 
     public async Task<BookingResult<BookingModel>> GetOneAsync(string id)
     {
@@ -38,20 +37,19 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
             var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
-            var userResult = new GetUserByIdReply
-            {
-                User = new User
-                {
-                    Id = booking.UserId,
-                    FirstName = "Hans",
-                    LastName = "Mattin-Lassei",
-                    Email = "hans@domain.com",
-                    PhoneNumber = "0701234567"
-                }
-            };
-            //var userResult = await _userClient.GetUserByIdAsync(new GetUserByIdRequest { UserId = booking.UserId });
-            var bookingWithAllData = BookingFactory.MapUserToBookingModel(bookingWithEvent!, userResult.User);
-            return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingWithAllData };
+            var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
+            if (accountResult == null)
+                return new BookingResult<BookingModel> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
+
+            var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+
+            var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
+            if (profileResult == null)
+                return new BookingResult<BookingModel> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+
+            bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
+            return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingWithEvent };
         }
         catch (Exception ex)
         {
@@ -75,19 +73,18 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
-                var userResult = new GetUserByIdReply
-                {
-                    User = new User
-                    {
-                        Id = booking.UserId,
-                        FirstName = "Hans",
-                        LastName = "Mattin-Lassei",
-                        Email = "hans@domain.com",
-                        PhoneNumber = "0701234567"
-                    }
-                };
-                //var userResult = await _userClient.GetUserByIdAsync(new GetUserByIdRequest { UserId = booking.UserId });
-                var bookingWithAllData = BookingFactory.MapUserToBookingModel(bookingWithEvent!, userResult.User);
+                var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
+                if (accountResult == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
+
+                var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+
+                var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
+                if (profileResult == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+
+                bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
                 bookingsWithEventAndUserData.Add(bookingWithAllData!);
             }
 
@@ -116,18 +113,18 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
-                var userResult = new GetUserByIdReply
-                {
-                    User = new User
-                    {
-                        Id = booking.UserId,
-                        FirstName = "Hans",
-                        LastName = "Mattin-Lassei",
-                        Email = "hans@domain.com",
-                        PhoneNumber = "0701234567"
-                    }
-                };
-                var bookingWithAllData = BookingFactory.MapUserToBookingModel(bookingWithEvent!, userResult.User);
+                var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
+                if (accountResult == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
+
+                var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+
+                var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
+                if (profileResult == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+
+                bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
                 bookingsWithEventAndUserData.Add(bookingWithAllData!);
             }
 
@@ -156,18 +153,18 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
-                var userResult = new GetUserByIdReply
-                {
-                    User = new User
-                    {
-                        Id = booking.UserId,
-                        FirstName = "Hans",
-                        LastName = "Mattin-Lassei",
-                        Email = "hans@domain.com",
-                        PhoneNumber = "0701234567"
-                    }
-                };
-                var bookingWithAllData = BookingFactory.MapUserToBookingModel(bookingWithEvent!, userResult.User);
+                var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
+                if (accountResult == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
+
+                var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+
+                var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
+                if (profileResult == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+
+                bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
                 bookingsWithEventAndUserData.Add(bookingWithAllData!);
             }
 
@@ -197,18 +194,19 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
-                var userResult = new GetUserByIdReply
-                {
-                    User = new User
-                    {
-                        Id = booking.UserId,
-                        FirstName = "Hans",
-                        LastName = "Mattin-Lassei",
-                        Email = "hans@domain.com",
-                        PhoneNumber = "0701234567"
-                    }
-                };
-                var bookingWithAllData = BookingFactory.MapUserToBookingModel(bookingWithEvent!, userResult.User);
+                var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
+                if (accountResult == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
+
+                var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+
+                var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
+                if (profileResult == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+
+                bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
+
                 bookingsWithEventAndUserData.Add(bookingWithAllData!);
             }
 
@@ -251,6 +249,17 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                     return new BookingResult<BookingModel> { Succeeded = false, Error = "Not enough tickets available for this event" };
             }
 
+            var accountResult = await _accountRestService.GetAccountByIdAsync(form.UserId);
+
+            if (accountResult == null)
+                return new BookingResult<BookingModel> { Succeeded = false, StatusCode = 404, Error = "Account with provided ID could not be found." };
+
+
+            var profileResult = await _profileRestService.GetProfileByIdAsync(form.UserId);
+            if (profileResult == null)
+                return new BookingResult<BookingModel> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+
+
             var entityToAdd = createRequest.MapTo<BookingEntity>();
             var result = await _bookingRepository.AddAsync(entityToAdd);
 
@@ -275,27 +284,28 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 TicketCategoryName = form.TicketCategoryName
             });
 
-            var emailPayload = JsonSerializer.Serialize(new
-            {
-                BookingId = entityToAdd.Id
-            });
 
+            var emailPayload = new BookingConfirmationRequest
+            {
+                BookingId = entityToAdd.Id,
+                UserId = form.UserId,
+                EventId = form.EventId,
+                UserEmail = accountResult.Email
+            };
 
             if (result.Succeeded)
             {
                 await _invoiceServiceBus.PublishAsync(inovicePayload);
                 await _ticketServiceBusHandler.PublishAsync(ticketPayload);
-                await _emailServiceBusHandler.PublishAsync(emailPayload);
+                await _emailService.SendBookingConfirmationAsync(emailPayload);
 
 
-                var bookingModel = result.Result!.MapTo<BookingModel>();
-                bookingModel.EventName = eventReply!.Event.EventName;
-                bookingModel.EventCategoryName = eventReply.Event.EventCategoryName;
-                bookingModel.EventDate = DateOnly.Parse(eventReply.Event.EventDate);
-                bookingModel.EventTime = TimeOnly.Parse(eventReply.Event.EventTime);
+                var bookingWithEvent = result.Result!.MapTo<BookingModel>();
+                bookingWithEvent = BookingFactory.MapEventToBookingModel(bookingWithEvent, eventReply!.Event);
+                var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+                bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
 
-
-                return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingModel };
+                return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingWithEvent };
             }
             return new BookingResult<BookingModel> { Succeeded = false, Error = result.Error, StatusCode = result.StatusCode };
         }
@@ -336,7 +346,20 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             if (eventReply.Event.EventAmountOfGuests - totalEventBookings < form.TicketQuantity)
                 return new BookingResult<BookingModel> { Succeeded = false, Error = "Not enough tickets available for this event" };
 
-            var result = await _bookingRepository.UpdateBookingFromModelAsync(model);
+            var accountResult = await _accountRestService.GetAccountByIdAsync(form.UserId);
+            if (accountResult == null)
+                return new BookingResult<BookingModel> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
+
+            var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(model, accountResult);
+
+
+            var profileResult = await _profileRestService.GetProfileByIdAsync(form.UserId);
+            if (profileResult == null)
+                return new BookingResult<BookingModel> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+
+            bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
+            var result = await _bookingRepository.UpdateBookingFromModelAsync(bookingWithAllData ?? model);
 
             if (result.Succeeded == false)
                 return new BookingResult<BookingModel> { Succeeded = false, StatusCode = 500, Error = "Something went wrong when updating the booking" };

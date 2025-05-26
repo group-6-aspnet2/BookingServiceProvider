@@ -63,6 +63,7 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
             return result.StatusCode switch
             {
                 200 => Ok(result.Result),
+                404 => NotFound(result.Error),
                 _ => Problem(result.Error)
             };
         }
