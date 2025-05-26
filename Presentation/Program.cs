@@ -30,6 +30,7 @@ builder.Services.AddSingleton<ServiceBusClient>(provider =>
 builder.Services.AddHostedService<UpdateBookingQueueBackgroundService>(); // listener 
 builder.Services.AddScoped<IInvoiceServiceBusHandler, InvoiceServiceBusHandler>(); // publisher
 builder.Services.AddScoped<ITicketServiceBusHandler, TicketServiceBusHandler>(); // publisher
+builder.Services.AddMemoryCache();
 
 builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
 {

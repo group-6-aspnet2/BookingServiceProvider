@@ -5,6 +5,7 @@ using Data.Interfaces;
 using Domain.Extensions;
 using Domain.Models;
 using Domain.Responses;
+using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -12,7 +13,7 @@ namespace Business.Services;
 
 
 
-public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient, IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailRestService emailService, IAccountRestService accountRestService, IProfileRestService profileRestService) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient, IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailRestService emailService, IAccountRestService accountRestService, IProfileRestService profileRestService, IMemoryCache cache) : IBookingService
 {
 
     private readonly IBookingRepository _bookingRepository = bookingRepository;
@@ -23,6 +24,9 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     private readonly IEmailRestService _emailService = emailService;
     private readonly IAccountRestService _accountRestService = accountRestService;
     private readonly IProfileRestService _profileRestService = profileRestService;
+    private readonly IMemoryCache _cache = cache;
+    private readonly TimeSpan _cacheExpiration = TimeSpan.FromSeconds(45);
+
 
     public async Task<BookingResult<BookingModel>> GetOneAsync(string id)
     {
@@ -62,33 +66,46 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
     {
         try
         {
-            var bookingResult = await _bookingRepository.GetAllAsyncWithStatus(orderByDescending: true, sortByColumn: x => x.CreateDate, includes: x => x.Status);
-            if (bookingResult.Succeeded == false)
-                return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = bookingResult.StatusCode, Error = bookingResult.Error };
+            const string cacheKey = "AllBookings";
 
-            var bookingsWithEventAndUserData = new List<BookingModel>();
-
-            foreach (var booking in bookingResult.Result!)
+            if (!_cache.TryGetValue(cacheKey, out IEnumerable<BookingModel>? cacheModels))
             {
-                var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
-                var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
-                var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
-                if (accountResult == null)
-                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
+                var bookingResult = await _bookingRepository.GetAllAsyncWithStatus(orderByDescending: true, sortByColumn: x => x.CreateDate, includes: x => x.Status);
+                if (bookingResult.Succeeded == false)
+                    return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = bookingResult.StatusCode, Error = bookingResult.Error };
 
-                var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+                var cacheEntryOptions = new MemoryCacheEntryOptions().SetAbsoluteExpiration(_cacheExpiration);
+                _cache.Set(cacheKey, bookingResult.Result, cacheEntryOptions);
 
-                var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
-                if (profileResult == null)
-                    return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+                var bookingsWithEventAndUserData = new List<BookingModel>();
 
-                bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+                foreach (var booking in bookingResult.Result!)
+                {
+                    var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
+                    var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
-                bookingsWithEventAndUserData.Add(bookingWithAllData!);
+                    var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
+                    if (accountResult == null)
+                        return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find account with provided Id" };
+
+                    var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
+
+                    var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
+                    if (profileResult == null)
+                        return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
+
+                    bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
+                    bookingsWithEventAndUserData.Add(bookingWithAllData!);
+                }
+
+                return new BookingResult<IEnumerable<BookingModel>> { Succeeded = true, Result = bookingsWithEventAndUserData, StatusCode = bookingResult.StatusCode };
+
             }
 
-            return new BookingResult<IEnumerable<BookingModel>> { Succeeded = true, Result = bookingsWithEventAndUserData, StatusCode = bookingResult.StatusCode };
+            return new BookingResult<IEnumerable<BookingModel>> { Succeeded = true, Result = cacheModels, StatusCode = 200 };
+
         }
         catch (Exception ex)
         {
