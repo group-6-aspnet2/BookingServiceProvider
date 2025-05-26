@@ -16,7 +16,7 @@ public class ProfileRestService(HttpClient httpClient) : IProfileRestService
             if (string.IsNullOrEmpty(userId))
                 ArgumentNullException.ThrowIfNullOrWhiteSpace(userId);
 
-            var profileResponse = await _httpClient.GetAsync($"api/profiles/{userId}");
+            var profileResponse = await _httpClient.GetAsync($"api/profile/{userId}");
             if (!profileResponse.IsSuccessStatusCode)
                 return null!;
 

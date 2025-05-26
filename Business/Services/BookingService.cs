@@ -49,7 +49,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
             bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
 
-            return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingWithEvent };
+            return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingWithAllData };
         }
         catch (Exception ex)
         {
@@ -305,7 +305,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
                 bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
 
-                return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingWithEvent };
+                return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingWithAllData };
             }
             return new BookingResult<BookingModel> { Succeeded = false, Error = result.Error, StatusCode = result.StatusCode };
         }
