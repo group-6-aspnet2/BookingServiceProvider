@@ -29,15 +29,22 @@ builder.Services.AddSingleton<ServiceBusClient>(provider =>
 builder.Services.AddHostedService<UpdateBookingQueueBackgroundService>(); // listener 
 builder.Services.AddScoped<IInvoiceServiceBusHandler, InvoiceServiceBusHandler>(); // publisher
 builder.Services.AddScoped<ITicketServiceBusHandler, TicketServiceBusHandler>(); // publisher
-builder.Services.AddScoped<IEmailBookingConfirmationServiceBusHandler, EmailBookingConfirmationServiceBusHandler>(); // publisher
+
 builder.Services.AddGrpcClient<EventContract.EventContractClient>(x =>
 {
     x.Address = new Uri(builder.Configuration["GrpcClients:EventService"]!);
 });
 
-builder.Services.AddHttpClient<IEmailService, EmailService>(client =>
+
+
+builder.Services.AddHttpClient<IEmailRestService, EmailRestService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["HttpClients:EmailService"]!);
+});
+
+builder.Services.AddHttpClient<IAccountRestService, AccountRestService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["HttpClients:AccountService"]!);
 });
 
 var app = builder.Build();

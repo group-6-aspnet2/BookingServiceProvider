@@ -25,18 +25,34 @@ public static class BookingFactory
             return null;
         }
     }
-    public static BookingModel? MapUserToBookingModel(BookingModel booking, User bookingUser)
+    public static BookingModel? MapAccountModelToBookingModel(BookingModel booking, AccountModel bookingAccount)
     {
         try
         {
             ArgumentNullException.ThrowIfNull(booking);
-            ArgumentNullException.ThrowIfNull(bookingUser);
+            ArgumentNullException.ThrowIfNull(bookingAccount);
 
-            booking.FirstName = bookingUser.FirstName;
-            booking.LastName = bookingUser.LastName;
-            booking.Email = bookingUser.Email;
-            booking.PhoneNumber = bookingUser.PhoneNumber;
+            booking.Email = bookingAccount.Email;
+            booking.PhoneNumber = bookingAccount.PhoneNumber ?? "";
 
+            return booking;
+        }
+        catch (Exception ex)
+        {
+            Debug.WriteLine(ex.Message);
+            return null;
+        }
+    }
+
+    public static BookingModel? MapProfileModelToBookingModel(BookingModel booking, ProfileModel bookingProfile)
+    {
+        try
+        {
+            ArgumentNullException.ThrowIfNull(booking);
+            ArgumentNullException.ThrowIfNull(bookingProfile);
+
+            booking.FirstName = bookingProfile.FirstName;
+            booking.LastName = bookingProfile.LastName;
             return booking;
         }
         catch (Exception ex)
