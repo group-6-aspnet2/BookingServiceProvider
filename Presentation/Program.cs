@@ -19,6 +19,7 @@ builder.Services.AddDbContext<DataContext>(x => x.UseSqlServer(builder.Configura
 builder.Services.AddScoped<IBookingStatusRepository, BookingStatusRepository>();
 builder.Services.AddScoped<IBookingRepository, BookingRepository>();
 builder.Services.AddScoped<IBookingService, BookingService>();
+builder.Services.AddScoped<IBookingStatusService, BookingStatusService>();
 
 builder.Services.AddSingleton<ServiceBusClient>(provider =>
 {
@@ -45,6 +46,11 @@ builder.Services.AddHttpClient<IEmailRestService, EmailRestService>(client =>
 builder.Services.AddHttpClient<IAccountRestService, AccountRestService>(client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["HttpClients:AccountService"]!);
+});
+
+builder.Services.AddHttpClient<IProfileRestService, ProfileRestService>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["HttpClients:ProfileService"]!);
 });
 
 var app = builder.Build();

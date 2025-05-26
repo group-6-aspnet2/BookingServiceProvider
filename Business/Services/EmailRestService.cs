@@ -1,12 +1,8 @@
-﻿using Domain.Models;
+﻿using Business.Interfaces;
+using Domain.Models;
 using System.Net.Http.Json;
 
 namespace Business.Services;
-
-public interface IEmailRestService
-{
-    Task SendBookingConfirmationAsync(BookingConfirmationRequest request);
-}
 
 public class EmailRestService(HttpClient httpClient) : IEmailRestService
 {

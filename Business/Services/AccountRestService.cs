@@ -1,14 +1,9 @@
-﻿using Domain.Models;
+﻿using Business.Interfaces;
+using Domain.Models;
 using System.Diagnostics;
-using System.Net.Http;
 using System.Text.Json;
 
 namespace Business.Services;
-
-public interface IAccountRestService
-{
-    Task<AccountModel> GetAccountByIdAsync(string userId);
-}
 
 public class AccountRestService(HttpClient httpClient) : IAccountRestService
 {
@@ -34,6 +29,7 @@ public class AccountRestService(HttpClient httpClient) : IAccountRestService
         }
         catch (Exception ex)
         {
+            Debug.WriteLine(ex.Message);
             return null!;
         }
     }

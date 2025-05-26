@@ -56,7 +56,7 @@ public abstract class BaseRepository<TEntity, TModel> : IBaseRepository<TEntity,
         }
         catch (Exception ex)
         {
-            return new RepositoryResult<IEnumerable<TModel>> { Succeeded = false, StatusCode = 200, Error = ex.Message };
+            return new RepositoryResult<IEnumerable<TModel>> { Succeeded = false, StatusCode = 500, Error = ex.Message };
 
         }
 
