@@ -16,7 +16,7 @@ The goal was to work collaboratively to build multiple microservices that commun
 - Solid
 - Dynamic mapping
 - Factories
-- xUnit testing
+- xUnit testing (appropriate tests such as unit tests & integration tests for helper methods, factories, services and repositories).
 
 ## Functions
 ### ASP .NET Core Web Api (Base route: "api/bookings")
