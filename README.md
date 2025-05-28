@@ -5,6 +5,19 @@ It uses SQL Server, Entity Framework Core, gRPC, REST APIs, and Azure Service Bu
 This project was developed as part of the ASP.NET 2 course at Nackademin.
 The goal was to work collaboratively to build multiple microservices that communicate through REST and/or gRPC, and deploy them using various Azure services (web apps, databases, service buses, etc.).
 
+## Technologies used
+- ASP.NET Core Web API
+- Entity Framework Core
+- SQL Server
+- Azure Service Bus Queues
+- Background Services (HostedService)
+- Dependency Injection
+- Clean architecture principles
+- Solid
+- Dynamic mapping
+- Factories
+- xUnit testing
+
 ## Functions
 ### ASP .NET Core Web Api (Base route: "api/bookings")
 GET
@@ -27,7 +40,7 @@ All of CRUD. Should be used by other microservices to get booking data by the Id
 ### ASB Azure Service Bus Queues
 I only used Queues and not Topics due to the cost at Azure. I have two different service bus handlers that publishes to two seperate queues that other systems are listening to. I have one service bus listener running as a background service, which is much easier to configure with Azure Functions. I use Asp .Net Core Web Api because of gPRC. I also created TicketServiceProvider that uses AF for my controllers and service bus listeners instead of a Web Api. 
 
-### Improvements
+## Improvements
 Due to insufficient time I don't handle any tokens to check if the user that made the rest-request is of a certain userRole or if the user is the owner of the booking. I would like to implement authorization to the endpoints in the future. If I were to remake this project I would try to do better planning. Now that I have a better understanding of the structure and more knowledge of how the communication chain looks like. I tried making some sequence diagrams.
 
 
