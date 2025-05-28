@@ -18,11 +18,15 @@ DELETE
   - CancelBooking(string id): Recieves a string id and changes the statusId so the status is "cancelled". Unused, only there since early development discussions. Route "{id}".
   - DeleteBooking(string id): Recieves a string id and deletes the booking from the database. Route "delete/{id}".
 
-###gRPC
+### gRPC
 All of CRUD. Should be used by other microservices to get booking data by the Id faster than with REST. Because of gPRC I did not use Azure Functions as my presentation webapp. I had to use Web Api because AF doesn't support gPRC when publishing live. 
 
-###ASB Azure Service Bus Queues
+### ASB Azure Service Bus Queues
 I only used Queues and not Topics due to the cost at Azure. I have two different service bus handlers that publishes to two seperate queues that other systems are listening to. I have one service bus listener running as a background service, which is much easier to configure with Azure Functions. I use Asp .Net Core Web Api because of gPRC. I also created TicketServiceProvider that uses AF for my controllers and service bus listeners instead of a Web Api. 
 
 ### Improvements
 Due to insufficient time I don't handle any tokens to check if the user that made the rest-request is of a certain userRole or if the user is the owner of the booking. I would like to implement authorization to the endpoints in the future. If I were to remake this project I would try to do better planning. Now that I have a better understanding of the structure and more knowledge of how the communication chain looks like. I tried making some sequence diagrams.
+
+
+![Sequence diagram Get One Booking](getOneBooking-diagram.png)
+![Sequence diagram Create Booking](createBooking-diagram.png)
