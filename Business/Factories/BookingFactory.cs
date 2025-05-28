@@ -12,10 +12,18 @@ public static class BookingFactory
             ArgumentNullException.ThrowIfNull(booking);
             ArgumentNullException.ThrowIfNull(bookingEvent);
 
+
+            if (!DateOnly.TryParse(bookingEvent.EventDate, out var eventDate))
+                throw new FormatException("Invalid EventDate format");
+
+            if (!TimeOnly.TryParse(bookingEvent.EventTime, out var eventTime))
+                throw new FormatException("Invalid EventTime format");
+
             booking.EventName = bookingEvent.EventName ?? "";
-            booking.EventDate = DateOnly.Parse(bookingEvent.EventDate);
-            booking.EventTime = TimeOnly.Parse(bookingEvent.EventTime);
+            booking.EventDate = eventDate;     
+            booking.EventTime = eventTime;  
             booking.EventCategoryName = bookingEvent.EventCategoryName ?? "";
+
 
             return booking;
         }
