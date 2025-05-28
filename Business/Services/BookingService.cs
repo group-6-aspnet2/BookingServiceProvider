@@ -5,7 +5,6 @@ using Data.Interfaces;
 using Domain.Extensions;
 using Domain.Models;
 using Domain.Responses;
-using Microsoft.Extensions.Caching.Memory;
 using System.Diagnostics;
 using System.Text.Json;
 
@@ -13,7 +12,7 @@ namespace Business.Services;
 
 
 
-public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient, IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailRestService emailService, IAccountRestService accountRestService, IProfileRestService profileRestService, IMemoryCache cache) : IBookingService
+public class BookingService(IBookingRepository bookingRepository, IBookingStatusRepository bookingStatusRepository, EventContract.EventContractClient eventClient, IInvoiceServiceBusHandler invoiceServiceBus, ITicketServiceBusHandler ticketServiceBusHandler, IEmailRestService emailService, IAccountRestService accountRestService, IProfileRestService profileRestService ) : IBookingService
 {
 
     private readonly IBookingRepository _bookingRepository = bookingRepository;
@@ -30,12 +29,18 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
         try
         {
             var result = await _bookingRepository.GetAsyncWithStatus(findBy: x => x.Id == id, includes: x => x.Status);
-            if (result.Succeeded == false || result.Result == null)
+            if (!result.Succeeded)
                 return new BookingResult<BookingModel> { Succeeded = false, StatusCode = result.StatusCode, Error = result.Error };
+
+            if (result.Result == null)
+                return new BookingResult<BookingModel> { Succeeded = false, StatusCode = 404, Error = "Booking not found" };
 
             var booking = result.Result;
 
             var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
+            if (eventResult == null || eventResult.Succeeded == false || eventResult.Event == null)
+                return new BookingResult<BookingModel> { StatusCode = 404, Succeeded = false, Error = "Could not fetch event" };
+
             var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
 
             var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
@@ -143,6 +148,8 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
         {
             var bookingResult = await _bookingRepository.GetAllAsyncWithStatus(orderByDescending: true, sortByColumn: x => x.CreateDate, filterBy: x => x.EventId == eventId, includes: x => x.Status);
 
+
+
             if (bookingResult.Succeeded == false)
                 return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = bookingResult.StatusCode, Error = bookingResult.Error };
 
@@ -151,7 +158,13 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             foreach (var booking in bookingResult.Result!)
             {
                 var eventResult = await _eventClient.GetEventByIdAsync(new GetEventByIdRequest { EventId = booking.EventId });
+                if(eventResult.Event == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = 404, Error = "Could not fetch event" };
+
                 var bookingWithEvent = BookingFactory.MapEventToBookingModel(booking, eventResult.Event);
+
+                if (bookingWithEvent == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = 500, Error = "Event mapping failed" };
 
                 var accountResult = await _accountRestService.GetAccountByIdAsync(booking.UserId);
                 if (accountResult == null)
@@ -159,11 +172,17 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
 
                 var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
 
+                if (bookingWithAllData == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = 500, Error = "Account mapping failed" };
+
                 var profileResult = await _profileRestService.GetProfileByIdAsync(booking.UserId);
                 if (profileResult == null)
                     return new BookingResult<IEnumerable<BookingModel>> { StatusCode = 404, Succeeded = false, Error = "Could not find profile with provided Id" };
 
                 bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
+                if (bookingWithAllData == null)
+                    return new BookingResult<IEnumerable<BookingModel>> { Succeeded = false, StatusCode = 500, Error = "Profile mapping failed" };
 
                 bookingsWithEventAndUserData.Add(bookingWithAllData!);
             }
@@ -274,6 +293,7 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
             var eventRequest = new GetEventByIdRequest { EventId = form.EventId };
             GetEventByIdReply eventReply = await _eventClient.GetEventByIdAsync(eventRequest);
 
+
             if (eventReply != null)
             {
                 var allEventBookingsResult = await GetBookingsByEventIdAsync(eventReply.Event.EventId);
@@ -333,17 +353,21 @@ public class BookingService(IBookingRepository bookingRepository, IBookingStatus
                 UserEmail = accountResult.Email
             };
 
-            if (result.Succeeded)
+            if (result.Succeeded && result.Result != null)
             {
                 await _invoiceServiceBus.PublishAsync(inovicePayload);
                 await _ticketServiceBusHandler.PublishAsync(ticketPayload);
                 await _emailService.SendBookingConfirmationAsync(emailPayload);
 
 
-                var bookingWithEvent = result.Result!.MapTo<BookingModel>();
-                bookingWithEvent = BookingFactory.MapEventToBookingModel(bookingWithEvent, eventReply!.Event);
+                var bookingWithEvent = BookingFactory.MapEventToBookingModel(result.Result, eventReply!.Event);
                 var bookingWithAllData = BookingFactory.MapAccountModelToBookingModel(bookingWithEvent!, accountResult);
                 bookingWithAllData = BookingFactory.MapProfileModelToBookingModel(bookingWithAllData!, profileResult);
+
+
+                if (bookingWithAllData == null)
+                    return new BookingResult<BookingModel> { Succeeded = false, StatusCode = 500, Error = "Mapping of entity to model failed" };
+
 
                 return new BookingResult<BookingModel> { Succeeded = true, StatusCode = result.StatusCode, Result = bookingWithAllData };
             }
