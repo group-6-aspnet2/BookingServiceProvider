@@ -1,6 +1,9 @@
 # BookingServiceProvider
+This is a microservice built with ASP.NET Core 9.
+It uses SQL Server, Entity Framework Core, gRPC, REST APIs, and Azure Service Bus Queues.
 
-This is a microservice build with ASP .NET Core. The BookingServiceProvider uses Sql Server, .NET9, Entity Framework Core, gRPC, REST API and some services on Azure such as Azure Service Bus Queues. The project is an assignment during my course in ASP.NET 2 at Nackademin. Our goal was to work together to put together multiple systems that communicates to one another through either REST and/or gPRC. We used cloud services to publish everything live on Azure. We had multiple web apps, databases, servers, servicebuses etc. 
+This project was developed as part of the ASP.NET 2 course at Nackademin.
+The goal was to work collaboratively to build multiple microservices that communicate through REST and/or gRPC, and deploy them using various Azure services (web apps, databases, service buses, etc.).
 
 ## Functions
 ### ASP .NET Core Web Api (Base route: "api/bookings")
