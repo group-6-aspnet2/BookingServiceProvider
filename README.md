@@ -3,7 +3,7 @@
 This is a microservice build with ASP .NET Core. The BookingServiceProvider uses Sql Server, .NET9, Entity Framework Core, gRPC, REST API and some services on Azure such as Azure Service Bus Queues. The project is an assignment during my course in ASP.NET 2 at Nackademin. Our goal was to work together to put together multiple systems that communicates to one another through either REST and/or gPRC. We used cloud services to publish everything live on Azure. We had multiple web apps, databases, servers, servicebuses etc. 
 
 ## Functions
-###ASP .NET Core Web Api (Base route: "api/bookings")
+### ASP .NET Core Web Api (Base route: "api/bookings")
 GET
   - GetAllBookings: Fetches all bookings in the entire database.
   - GetBookingsByStatus(int statusId): Recieves an int representing the statusId from the params. Statuses such as "Pending", "Confirmed", "Cancelled" with an int as key. Fetches all bookings with a specific statusId. Route "string/{statusId}"
