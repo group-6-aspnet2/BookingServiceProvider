@@ -143,8 +143,6 @@ public class BookingsController(IBookingService bookingService) : ControllerBase
     }
 
 
-
-
     [HttpPost]
     [SwaggerOperation(Summary = "Adds a booking to the list of bookings.")]
     [SwaggerResponse(201, "Booking added successfully.")]

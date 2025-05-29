@@ -1,5 +1,6 @@
 ﻿using Business.Services;
 using Microsoft.AspNetCore.Mvc;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace Presentation.Controllers;
 
@@ -10,6 +11,11 @@ public class BookingStatusesController(IBookingStatusService bookingStatusServic
     private readonly IBookingStatusService _bookingStatusService = bookingStatusService;
 
     [HttpGet]
+    [SwaggerOperation(Summary = "Returns a list of booking statuses")]
+    [SwaggerResponse(200, "Statuses received successfully.")]
+    [SwaggerResponse(400, "Bad request.")]
+    [SwaggerResponse(404, "Statuses not found.")]
+    [SwaggerResponse(500, "An error occurred while retrieving the statuses.")]
     public async Task<IActionResult> GetAllStatuses()
     {
         try
@@ -30,6 +36,11 @@ public class BookingStatusesController(IBookingStatusService bookingStatusServic
     }
 
     [HttpGet("{id}")]
+    [SwaggerOperation(Summary = "Returns a status by its ID.")]
+    [SwaggerResponse(200, "Status received successfully.")]
+    [SwaggerResponse(400, "Bad request.")]
+    [SwaggerResponse(404, "Status not found.")]
+    [SwaggerResponse(500, "An error occurred while retrieving the status.")]
     public async Task<IActionResult> GetStatusById(int id)
     {
         try
