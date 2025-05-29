@@ -25,12 +25,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="swashbuckle.aspnetcore" Version="8.1.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.2" />
+    <PackageReference Include="swashbuckle.aspnetcore.filters" Version="8.0.3" />
   </ItemGroup>
 
 	<ItemGroup>
-		<Protobuf Include="Protos\booking.proto"
-          GrpcServices="Server"
-          AdditionalImportDirs="$(GoogleApiCommonProtosDir)content" />
+		<Protobuf Include="Protos\booking.proto" GrpcServices="Server" AdditionalImportDirs="$(GoogleApiCommonProtosDir)content" />
 	</ItemGroup>
 	
   <ItemGroup>
